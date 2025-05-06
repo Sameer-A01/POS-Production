@@ -20,12 +20,11 @@ const getSummary = async (req, res) => {
       const ordersToday = await Order.countDocuments({
         orderDate: { $gte: startOfDay, $lte: endOfDay }
       });
-
-      // Total Revenue
-      const revenueResult = await Order.aggregate([
-        { $group: { _id: null, totalRevenue: { $sum: '$totalPrice' } } }
-      ]);
-      const revenue = revenueResult[0]?.totalRevenue || 0;
+// Total Revenue
+const revenueResult = await Order.aggregate([
+  { $group: { _id: null, totalRevenue: { $sum: '$totalAmount' } } }
+]);
+const revenue = revenueResult[0]?.totalRevenue || 0;
 
       // Out of Stock Products
       const outOfStock = await Product.find({ stock: 0 })

@@ -1,19 +1,14 @@
-// src/components/Products.jsx
 import React, { useState, useEffect } from "react";
 import axiosInstance from "../utils/api";
 
-const EmployeeProducts = () => {
+const POSPage = () => {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [products, setProducts] = useState([]);
-  const [filterProducts, setFilteredProducts] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [orderData, setOrderData] = useState({
-    productId: "",
-    quantity: 1,
-    total: 0,
-    stock: 0,
-    price: 0,
+    products: [],
+    totalAmount: 0,
   });
   const [loading, setLoading] = useState(false);
 
@@ -22,6 +17,7 @@ const EmployeeProducts = () => {
   const userId = user?._id;
   const userName = user?.name;
 
+  // Fetch products from server
   const fetchProducts = async () => {
     setLoading(true);
     try {
@@ -42,9 +38,20 @@ const EmployeeProducts = () => {
     }
   };
 
+  // On component mount
   useEffect(() => {
     fetchProducts();
+    // Load cart from localStorage
+    const savedCart = localStorage.getItem("ims_cart");
+    if (savedCart) {
+      setOrderData(JSON.parse(savedCart));
+    }
   }, []);
+
+  // Save cart to localStorage whenever orderData changes
+  useEffect(() => {
+    localStorage.setItem("ims_cart", JSON.stringify(orderData));
+  }, [orderData]);
 
   const handleFilterProducts = (e) => {
     setFilteredProducts(
@@ -62,43 +69,83 @@ const EmployeeProducts = () => {
   };
 
   const handleOrderClick = (product) => {
-    setOrderData({
-      productId: product._id,
-      quantity: 1,
-      total: product.price,
-      price: product.price,
-      stock: product.stock,
-    });
-    setIsModalOpen(true);
+    const existingProductIndex = orderData.products.findIndex(
+      (item) => item.productId === product._id
+    );
+
+    if (existingProductIndex >= 0) {
+      const updatedOrder = [...orderData.products];
+      updatedOrder[existingProductIndex].quantity += 1;
+
+      const updatedTotalAmount = updatedOrder.reduce(
+        (total, item) =>
+          total + item.quantity * products.find((p) => p._id === item.productId).price,
+        0
+      );
+
+      setOrderData({
+        products: updatedOrder,
+        totalAmount: updatedTotalAmount,
+      });
+    } else {
+      setOrderData({
+        products: [
+          ...orderData.products,
+          { productId: product._id, quantity: 1 },
+        ],
+        totalAmount: orderData.totalAmount + product.price,
+      });
+    }
   };
 
-  const IncreaseQuantity = (e) => {
-    const qty = parseInt(e.target.value);
-    if (qty > orderData.stock) {
-      alert("Not enough stock");
-    } else {
-      setOrderData((prev) => ({
-        ...prev,
-        quantity: qty,
-        total: qty * prev.price,
-      }));
-    }
+  const handleQuantityChange = (productId, quantity) => {
+    const updatedProducts = orderData.products.map((item) =>
+      item.productId === productId
+        ? { ...item, quantity }
+        : item
+    );
+
+    const updatedTotalAmount = updatedProducts.reduce(
+      (total, item) =>
+        total + item.quantity * products.find((p) => p._id === item.productId).price,
+      0
+    );
+
+    setOrderData({ products: updatedProducts, totalAmount: updatedTotalAmount });
+  };
+
+  const handleRemoveProduct = (productId) => {
+    const updatedProducts = orderData.products.filter(
+      (item) => item.productId !== productId
+    );
+
+    const updatedTotalAmount = updatedProducts.reduce(
+      (total, item) =>
+        total + item.quantity * products.find((p) => p._id === item.productId).price,
+      0
+    );
+
+    setOrderData({ products: updatedProducts, totalAmount: updatedTotalAmount });
   };
 
   const handleOrderSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await axiosInstance.post("/order/add", orderData, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("ims_token")}`,
-        },
-      });
+      const response = await axiosInstance.post(
+        "/order/add",
+        { products: orderData.products, totalAmount: orderData.totalAmount },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("ims_token")}`,
+          },
+        }
+      );
       if (response.data.success) {
-        setIsModalOpen(false);
-        setOrderData({ productId: "", quantity: 1, total: 0 });
+        alert("Order placed successfully!");
+        setOrderData({ products: [], totalAmount: 0 });
+        localStorage.removeItem("ims_cart"); // Clear cart after order
         fetchProducts();
-        alert("Order placed");
       }
     } catch (err) {
       alert(err.message);
@@ -108,125 +155,121 @@ const EmployeeProducts = () => {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-2">Products</h1>
-      {userName && (
-        <p className="text-lg text-gray-700 mb-4">
-          Welcome, <span className="font-semibold">{userName}</span>
-        </p>
-      )}
-
-      {loading && <p className="text-gray-500 mb-4">Loading...</p>}
-
-      {/* Category & Search */}
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-        <select
-          value={selectedCategory}
-          onChange={handleChangeCategory}
-          className="w-full sm:w-1/3 p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          disabled={loading}
-        >
-          <option value="">Select Category</option>
-          {categories.map((category) => (
-            <option key={category._id} value={category._id}>
-              {category.name}
-            </option>
-          ))}
-        </select>
-        <input
-          type="text"
-          onChange={handleFilterProducts}
-          placeholder="Search products..."
-          className="w-full sm:w-1/3 p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          disabled={loading}
-        />
-      </div>
-
-      {/* Product Table */}
-      <div className="overflow-x-auto bg-white rounded-lg shadow">
-        <table className="min-w-full">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="p-2 text-left">ID</th>
-              <th className="p-2 text-left">Name</th>
-              <th className="p-2 text-left">Category</th>
-              <th className="p-2 text-left">Price</th>
-              <th className="p-2 text-left">Stock</th>
-              <th className="p-2 text-left">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filterProducts.map((product, index) => (
-              <tr key={product._id} className="border-t">
-                <td className="p-2">{index + 1}</td>
-                <td className="p-2">{product.name}</td>
-                <td className="p-2">{product.category.name}</td>
-                <td className="p-2">${product.price}</td>
-                <td className="p-2">{product.stock}</td>
-                <td className="p-2">
-                  <button
-                    onClick={() => handleOrderClick(product)}
-                    className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 disabled:bg-green-300"
-                    disabled={loading || product.stock === 0}
-                  >
-                    Order
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {filterProducts.length === 0 && !loading && (
-          <p className="text-center p-4 text-gray-500">No products found</p>
+    <div className="flex justify-center items-start h-screen bg-gray-100">
+      <div className="w-full sm:w-3/4 md:w-2/3 lg:w-1/2 xl:w-1/3 p-4 bg-white rounded-md shadow-lg">
+        <h1 className="text-2xl font-bold mb-4">POS System</h1>
+        {userName && (
+          <p className="text-lg text-gray-700 mb-4">
+            Welcome, <span className="font-semibold">{userName}</span>
+          </p>
         )}
-      </div>
 
-      {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-semibold mb-4">Place Order</h2>
-            <form onSubmit={handleOrderSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Quantity
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  value={orderData.quantity}
-                  onChange={IncreaseQuantity}
-                  className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  disabled={loading}
-                  required
-                />
-              </div>
-              <div>
-                <strong>Total: ${orderData.total}</strong>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  type="submit"
-                  className="flex-1 bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 disabled:bg-green-300"
-                  disabled={loading}
-                >
-                  Place Order
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="flex-1 bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 disabled:bg-gray-300"
-                  disabled={loading}
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
+        {/* Search and Category Filter */}
+        <div className="flex gap-4 mb-6">
+          <input
+            type="text"
+            placeholder="Search products..."
+            onChange={handleFilterProducts}
+            className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={loading}
+          />
+          <select
+            value={selectedCategory}
+            onChange={handleChangeCategory}
+            className="p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={loading}
+          >
+            <option value="">All Categories</option>
+            {categories.map((category) => (
+              <option key={category._id} value={category._id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
         </div>
-      )}
+
+        {/* Product Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-6">
+          {filteredProducts.map((product) => (
+            <div
+              key={product._id}
+              className="border rounded-lg p-4 flex flex-col items-center justify-between bg-gray-50"
+            >
+              <h3 className="text-md font-semibold">{product.name}</h3>
+              <p className="text-sm text-gray-600">${product.price}</p>
+              <p className="text-sm text-gray-600">Stock: {product.stock}</p>
+              <button
+                onClick={() => handleOrderClick(product)}
+                className="bg-blue-500 text-white px-4 py-2 rounded-md mt-4 hover:bg-blue-600 disabled:bg-blue-300"
+                disabled={loading || product.stock === 0}
+              >
+                Add to Order
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {/* Order Summary */}
+        <div className="mt-6">
+          <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
+          {orderData.products.length === 0 ? (
+            <p className="text-center text-gray-500">No items in order</p>
+          ) : (
+            <div className="space-y-2">
+              {orderData.products.map((item, index) => {
+                const product = products.find((p) => p._id === item.productId);
+                return (
+                  <div key={index} className="flex justify-between items-center gap-2">
+                    <span>{product?.name}</span>
+                    <div className="flex gap-2 items-center">
+                      <button
+                        onClick={() => handleQuantityChange(item.productId, item.quantity - 1)}
+                        disabled={item.quantity <= 1}
+                        className="bg-gray-200 text-gray-700 p-1 rounded"
+                      >
+                        -
+                      </button>
+                      <span>{item.quantity}</span>
+                      <button
+                        onClick={() => handleQuantityChange(item.productId, item.quantity + 1)}
+                        disabled={item.quantity >= product?.stock}
+                        className="bg-gray-200 text-gray-700 p-1 rounded"
+                      >
+                        +
+                      </button>
+                    </div>
+                    <span>${product?.price * item.quantity}</span>
+                    <button
+                      onClick={() => handleRemoveProduct(item.productId)}
+                      className="text-red-500 font-bold text-lg hover:text-red-700"
+                      title="Remove"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                );
+              })}
+              <div className="flex justify-between items-center font-semibold mt-4">
+                <span>Total</span>
+                <span>${orderData.totalAmount}</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Order Button */}
+        <div className="mt-6">
+          <button
+            onClick={handleOrderSubmit}
+            className="w-full bg-green-500 text-white py-3 rounded-md hover:bg-green-600 disabled:bg-green-300"
+            disabled={orderData.products.length === 0 || loading}
+          >
+            Place Order
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
 
-export default EmployeeProducts;
+export default POSPage;

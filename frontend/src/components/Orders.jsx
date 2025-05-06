@@ -57,45 +57,60 @@ const Orders = () => {
             </tr>
           </thead>
           <tbody>
-            {orders.length > 0 ? (
-              orders.map((order, index) => (
-                <tr key={order._id} className="border-t">
-                  <td className="p-2">{index + 1}</td>
-                  {user.role === 'admin' && (
-                    <>
-                      <td className="p-2">
-                        {order.user && order.user.name ? order.user.name : 'N/A'}
-                      </td>
-                      <td className="p-2">
-                        {order.user && order.user.address ? order.user.address : 'N/A'}
-                      </td>
-                    </>
-                  )}
-                  <td className="p-2">
-                    {order.product && order.product.name
-                      ? order.product.name
-                      : 'Product Name Not Available'}
-                  </td>
-                  <td className="p-2">
-                    {order.product && order.product.category && order.product.category.name
-                      ? order.product.category.name
-                      : 'Category Not Available'}
-                  </td>
-                  <td className="p-2">{order.quantity}</td>
-                  <td className="p-2">${order.totalPrice ? order.totalPrice.toFixed(2) : '0.00'}</td>
-                  <td className="p-2">
-                    {order.orderDate ? new Date(order.orderDate).toLocaleDateString() : 'N/A'}
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="7" className="text-center p-4 text-gray-500">
-                  No orders found
-                </td>
-              </tr>
+  {orders.length > 0 ? (
+    // Create a flat counter outside map
+    orders.flatMap((order, orderIndex) =>
+      order.products.map((item, productIndex, productArray) => {
+        const flatIndex =
+          orders
+            .slice(0, orderIndex)
+            .reduce((acc, curr) => acc + curr.products.length, 0) + productIndex + 1;
+
+        return (
+          <tr
+            key={`${order._id}-${productIndex}`}
+            className={`${
+              flatIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+            } border-b hover:bg-gray-100 transition-colors`}
+          >
+            {/* Correct Serial Number */}
+            <td className="p-3 font-medium text-gray-700">#{flatIndex}</td>
+
+            {user.role === 'admin' && (
+              <>
+                <td className="p-3 text-gray-700">{order.user?.name || 'N/A'}</td>
+                <td className="p-3 text-gray-700">{order.user?.address || 'N/A'}</td>
+              </>
             )}
-          </tbody>
+
+            <td className="p-3 text-gray-900 font-semibold">
+              {item.product?.name || 'Product Name Not Available'}
+            </td>
+            <td className="p-3 text-gray-600 italic">
+              {item.product?.category?.name || 'Category Not Available'}
+            </td>
+            <td className="p-3 text-center">{item.quantity}</td>
+            <td className="p-3 text-green-700 font-medium">
+              ${item.price && item.quantity ? (item.price * item.quantity).toFixed(2) : '0.00'}
+            </td>
+            <td className="p-3 text-sm text-gray-500">
+              {order.orderDate ? new Date(order.orderDate).toLocaleDateString() : 'N/A'}
+            </td>
+          </tr>
+        );
+      })
+    )
+  ) : (
+    <tr>
+      <td colSpan={user.role === 'admin' ? 7 : 5} className="text-center p-4 text-gray-500">
+        No orders found
+      </td>
+    </tr>
+  )}
+</tbody>
+
+
+
         </table>
       </div>
     </div>

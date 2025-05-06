@@ -1,34 +1,47 @@
+// controllers/orderController.js
 import Product from "../models/Product.js";
 import Order from "../models/Order.js";
 
-// Route to add a new employee
 const addOrder = async (req, res) => {
   try {
-    const { productId, quantity, total } = req.body;
+    const { products, totalAmount } = req.body; // products = [{ productId, quantity }]
     const userId = req.user._id;
-    const product = await Product.findById({_id: productId});
-    if (!product) return res.status(404).json({ error: 'Product not found' });
 
-    if(quantity > product.stock) {
-      return res.status(400).json({ error: 'Not enough stock' });
-    } else {
-      product.stock -= parseInt(quantity);
+    const orderItems = [];
+
+    for (let item of products) {
+      const product = await Product.findById(item.productId);
+      if (!product) {
+        return res.status(404).json({ error: `Product with ID ${item.productId} not found` });
+      }
+
+      if (item.quantity > product.stock) {
+        return res.status(400).json({ error: `Not enough stock for product ${product.name}` });
+      }
+
+      // Deduct stock
+      product.stock -= item.quantity;
       await product.save();
+
+      // Push order item
+      orderItems.push({
+        product: item.productId,
+        quantity: item.quantity,
+        price: product.price
+      });
     }
-    
-    // const totalPrice = product.price * quantity;
+
+    // Create order
     const order = new Order({
       user: userId,
-      product: productId,
-      quantity,
-      totalPrice: total
+      products: orderItems,
+      totalAmount
     });
+
     await order.save();
-    res
-      .status(201)
-      .json({ success: true, message: "Order created successfully" });
+
+    res.status(201).json({ success: true, message: "Order created successfully" });
   } catch (error) {
-    // console.log(error);
     res.status(500).json({ success: false, error: "Server error" });
   }
 };
@@ -41,26 +54,29 @@ const getOrders = async (req, res) => {
     let query = {};
     if (userRole === 'user') {
       query = { user: id };
-    } // Else, no filter - get all orders
+    }
+
     const orders = await Order.find(query)
       .populate({
-        path: 'product',
+        path: 'products.product',
         populate: {
           path: 'category',
           select: 'name'
         },
         select: 'name'
-      }).populate({
-        path: "user",
-        select: "name address"
+      })
+      .populate({
+        path: 'user',
+        select: 'name address'
       })
       .sort({ orderDate: -1 });
 
-    return res.status(200).json({success: true, orders});
+    res.status(200).json({ success: true, orders });
   } catch (err) {
-    return res.status(500).json({ success:false, error: 'Failed to fetch orders' });
+    res.status(500).json({ success: false, error: 'Failed to fetch orders' });
   }
 };
+
 
 
 
