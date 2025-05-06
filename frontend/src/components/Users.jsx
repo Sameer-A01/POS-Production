@@ -207,7 +207,11 @@ const Users = () => {
                     <td className="p-2">{user.role}</td>
                     <td className="p-2 flex gap-2">
                       <button
-                        onClick={() => handleDelete(category._id)}
+                      onClick={() => {
+                        if (window.confirm(`Are you sure you want to delete ${user.name}?`)) {
+                          handleDelete(user._id);
+                        }
+                      }}
                         className="text-red-500 font-bold"
                       >
                         Delete
