@@ -17,10 +17,11 @@ const EmployeeProducts = () => {
   });
   const [loading, setLoading] = useState(false);
 
-  // Dummy user ID (in real app, get this from auth context)
-  const userId = "dummy-user-id";
+  // Get user from localStorage
+  const user = JSON.parse(localStorage.getItem("ims_user"));
+  const userId = user?._id;
+  const userName = user?.name;
 
-  // Fetch products when category changes
   const fetchProducts = async () => {
     setLoading(true);
     try {
@@ -40,6 +41,7 @@ const EmployeeProducts = () => {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -71,14 +73,14 @@ const EmployeeProducts = () => {
   };
 
   const IncreaseQuantity = (e) => {
-    if (e.target.value > orderData.stock) {
+    const qty = parseInt(e.target.value);
+    if (qty > orderData.stock) {
       alert("Not enough stock");
-      // e.target.value = orderData.stock;
     } else {
       setOrderData((prev) => ({
         ...prev,
-        quantity: parseInt(e.target.value),
-        total: parseInt(e.target.value) * parseInt(orderData.price),
+        quantity: qty,
+        total: qty * prev.price,
       }));
     }
   };
@@ -92,12 +94,11 @@ const EmployeeProducts = () => {
           Authorization: `Bearer ${localStorage.getItem("ims_token")}`,
         },
       });
-      console.log(response.data);
       if (response.data.success) {
         setIsModalOpen(false);
         setOrderData({ productId: "", quantity: 1, total: 0 });
         fetchProducts();
-        alert("order placed");
+        alert("Order placed");
       }
     } catch (err) {
       alert(err.message);
@@ -108,11 +109,16 @@ const EmployeeProducts = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Products</h1>
+      <h1 className="text-2xl font-bold mb-2">Products</h1>
+      {userName && (
+        <p className="text-lg text-gray-700 mb-4">
+          Welcome, <span className="font-semibold">{userName}</span>
+        </p>
+      )}
 
       {loading && <p className="text-gray-500 mb-4">Loading...</p>}
 
-      {/* Category Dropdown and Search */}
+      {/* Category & Search */}
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
         <select
           value={selectedCategory}
@@ -136,7 +142,7 @@ const EmployeeProducts = () => {
         />
       </div>
 
-      {/* Products Table */}
+      {/* Product Table */}
       <div className="overflow-x-auto bg-white rounded-lg shadow">
         <table className="min-w-full">
           <thead>
@@ -175,7 +181,7 @@ const EmployeeProducts = () => {
         )}
       </div>
 
-      {/* Order Modal */}
+      {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
@@ -196,7 +202,7 @@ const EmployeeProducts = () => {
                 />
               </div>
               <div>
-                <strong>Total: {orderData.total}</strong>
+                <strong>Total: ${orderData.total}</strong>
               </div>
               <div className="flex gap-2">
                 <button
