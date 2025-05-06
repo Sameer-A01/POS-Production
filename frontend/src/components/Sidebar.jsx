@@ -9,6 +9,7 @@ import {
   FaCog,
   FaSignOutAlt,
   FaTable,
+  FaCashRegister,
 } from 'react-icons/fa';
 
 const Sidebar = () => {
@@ -26,7 +27,7 @@ const Sidebar = () => {
   ];
 
   const userMenuItems = [
-    { name: 'POS', path: '/employee-dashboard', icon: <FaBox />, isParent: true },
+    { name: 'POS', path: '/employee-dashboard', icon: <FaCashRegister/>, isParent: true },
     { name: 'My Orders', path: '/employee-dashboard/orders', icon: <FaShoppingCart />, isParent: false },
     { name: 'Products', path: '/admin-dashboard/products', icon: <FaBox />, isParent: false },
     { name: 'Categories', path: '/admin-dashboard/categories', icon: <FaTable />, isParent: false },

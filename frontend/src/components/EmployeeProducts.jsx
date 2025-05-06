@@ -19,7 +19,7 @@ const POSPage = () => {
     address: localStorage.getItem("company_address") || "123 Business Street",
     phone: localStorage.getItem("company_phone") || "555-123-4567",
     email: localStorage.getItem("company_email") || "contact@mystore.com",
-    taxRate: localStorage.getItem("company_taxRate") || "10",
+    taxRate: localStorage.getItem("company_taxRate") || "18",
   });
   const [showSettings, setShowSettings] = useState(false);
   
@@ -300,9 +300,9 @@ const POSPage = () => {
                   <tr>
                     <td>${index + 1}</td>
                     <td>${product?.name}</td>
-                    <td class="text-right">${product?.price.toFixed(2)}</td>
+                    <td class="text-right">₹${product?.price.toFixed(2)}</td>
                     <td class="text-right">${item.quantity}</td>
-                    <td class="text-right">${(product?.price * item.quantity).toFixed(2)}</td>
+                    <td class="text-right">₹${(product?.price * item.quantity).toFixed(2)}</td>
                   </tr>
                 `;
               }).join('')}
@@ -312,15 +312,15 @@ const POSPage = () => {
           <div class="summary-table">
             <div class="summary-row">
               <span>Subtotal:</span>
-              <span>${orderData.totalAmount.toFixed(2)}</span>
+              <span>₹${orderData.totalAmount.toFixed(2)}</span>
             </div>
             <div class="summary-row">
-              <span>Tax (${companyInfo.taxRate}%):</span>
-              <span>${calculateTax()}</span>
+              <span>GST (${companyInfo.taxRate}%):</span>
+              <span>₹${calculateTax()}</span>
             </div>
             <div class="summary-row total">
               <span>Grand Total:</span>
-              <span>${calculateGrandTotal()}</span>
+              <span>₹${calculateGrandTotal()}</span>
             </div>
           </div>
           
@@ -443,7 +443,7 @@ const POSPage = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tax Rate (%)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">GST Rate (%)</label>
                 <input
                   type="number"
                   name="taxRate"
@@ -514,9 +514,9 @@ const POSPage = () => {
                       <tr key={index} className="border-b border-gray-200">
                         <td className="py-2">{index + 1}</td>
                         <td className="py-2">{product?.name}</td>
-                        <td className="text-right py-2">${product?.price.toFixed(2)}</td>
+                        <td className="text-right py-2">₹{product?.price.toFixed(2)}</td>
                         <td className="text-right py-2">{item.quantity}</td>
-                        <td className="text-right py-2">${(product?.price * item.quantity).toFixed(2)}</td>
+                        <td className="text-right py-2">₹{(product?.price * item.quantity).toFixed(2)}</td>
                       </tr>
                     );
                   })}
@@ -527,15 +527,15 @@ const POSPage = () => {
                 <div className="w-64">
                   <div className="flex justify-between py-1">
                     <span>Subtotal:</span>
-                    <span>${orderData.totalAmount.toFixed(2)}</span>
+                    <span>₹{orderData.totalAmount.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between py-1">
-                    <span>Tax ({companyInfo.taxRate}%):</span>
-                    <span>${calculateTax()}</span>
+                    <span>GST ({companyInfo.taxRate}%):</span>
+                    <span>₹{calculateTax()}</span>
                   </div>
                   <div className="flex justify-between py-2 font-bold border-t border-gray-300 mt-1">
                     <span>Grand Total:</span>
-                    <span>${calculateGrandTotal()}</span>
+                    <span>₹{calculateGrandTotal()}</span>
                   </div>
                 </div>
               </div>
@@ -624,7 +624,7 @@ const POSPage = () => {
                       </div>
                       <h3 className="font-medium text-gray-800">{product.name}</h3>
                       <div className="flex justify-between items-center mt-1">
-                        <p className="text-blue-600 font-bold">${product.price.toFixed(2)}</p>
+                        <p className="text-blue-600 font-bold">₹{product.price.toFixed(2)}</p>
                         <p className={`text-xs px-2 py-1 rounded ${
                           product.stock > 10 
                             ? "bg-green-100 text-green-800" 
@@ -685,7 +685,7 @@ const POSPage = () => {
                       <div key={index} className="flex items-center bg-white p-3 rounded-lg shadow-sm">
                         <div className="flex-1">
                           <h4 className="font-medium">{product?.name}</h4>
-                          <p className="text-sm text-gray-600">${product?.price.toFixed(2)} each</p>
+                          <p className="text-sm text-gray-600">₹{product?.price.toFixed(2)} each</p>
                         </div>
                         <div className="flex items-center space-x-2">
                           <button
@@ -708,7 +708,7 @@ const POSPage = () => {
                           </button>
                         </div>
                         <div className="w-20 text-right font-medium">
-                          ${(product?.price * item.quantity).toFixed(2)}
+                          ₹{(product?.price * item.quantity).toFixed(2)}
                         </div>
                         <button
                           onClick={() => handleRemoveProduct(item.productId)}
@@ -728,15 +728,15 @@ const POSPage = () => {
               <div className="space-y-2">
                 <div className="flex justify-between text-gray-600">
                   <span>Subtotal</span>
-                  <span>${orderData.totalAmount.toFixed(2)}</span>
+                  <span>₹{orderData.totalAmount.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-gray-600">
-                  <span>Tax ({companyInfo.taxRate}%)</span>
-                  <span>${calculateTax()}</span>
+                  <span>GST ({companyInfo.taxRate}%)</span>
+                  <span>₹{calculateTax()}</span>
                 </div>
                 <div className="border-t pt-2 mt-2 flex justify-between font-bold text-lg">
                   <span>Total</span>
-                  <span className="text-blue-700">${calculateGrandTotal()}</span>
+                  <span className="text-blue-700">₹{calculateGrandTotal()}</span>
                 </div>
               </div>
               
