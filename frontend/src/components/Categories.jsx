@@ -1,5 +1,6 @@
 // Categories.jsx
 import React, { useState, useEffect } from 'react';
+import { PlusCircle, Edit, Trash2, Save, X, Search, Loader } from 'lucide-react';
 import axiosInstance from '../utils/api';
 
 const Categories = () => {
@@ -9,6 +10,8 @@ const Categories = () => {
   const [formDescription, setFormDescription] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const fetchCategories = async () => {
     setLoading(true);
@@ -20,12 +23,10 @@ const Categories = () => {
       });
       if (response.data.success) {
         setCategories(response.data.categories);
-        setFilteredCategories(
-          response.data.categories
-        );
+        setFilteredCategories(response.data.categories);
       }
     } catch (error) {
-      alert(error.message);
+      toast.error(error.message || 'Failed to fetch categories');
     } finally {
       setLoading(false);
     }
@@ -38,51 +39,61 @@ const Categories = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formCategory.trim()) return;
-
-    if (editingId) {
-      try {
-        const response = await axiosInstance.put(`/category/${editingId}`, {formCategory, formDescription}, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("ims_token")}`,
-          },
-        });
+    
+    setSubmitting(true);
+    try {
+      if (editingId) {
+        const response = await axiosInstance.put(`/category/${editingId}`, 
+          { formCategory, formDescription },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("ims_token")}`,
+            },
+          }
+        );
         if (response.data.success) {
-            fetchCategories();
+          toast.success('Category updated successfully');
+          fetchCategories();
         }
         setEditingId(null);
-      } catch (error) {
-        alert(error.message)
-      }
-    } else {
-      // Add new category
-      try {
+      } else {
+        // Add new category
         const token = localStorage.getItem("ims_token");
-        const response = await axiosInstance.post("/category/add", {formCategory, formDescription}, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await axiosInstance.post("/category/add", 
+          { formCategory, formDescription },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         if (response.data.success) {
-            fetchCategories();
+          toast.success('Category added successfully');
+          fetchCategories();
         }
-      } catch (error) {
-        alert(error.message);
       }
+    } catch (error) {
+      toast.error(error.message || 'Operation failed');
+    } finally {
+      setSubmitting(false);
+      setFormCategory('');
+      setFormDescription('');
     }
-    
-    setFormCategory('');
-    setFormDescription('');
   };
 
   const handleSearchInput = (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
     setFilteredCategories(
-      categories.filter((supplier) =>
-        supplier.name.toLowerCase().includes(e.target.value.toLowerCase())
+      categories.filter((category) =>
+        category.name.toLowerCase().includes(value.toLowerCase())
       )
     );
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id, name) => {
+    if (!window.confirm(`Are you sure you want to delete "${name}"?`)) return;
+    
     try {
       const response = await axiosInstance.delete(`/category/${id}`, {
         headers: {
@@ -90,15 +101,16 @@ const Categories = () => {
         },
       });
       if (response.data.success) {
-          setCategories((prev) => prev.filter((category) => category._id !== id));
-          setFilteredCategories((prev) => prev.filter((category) => category._id !== id));
+        toast.success('Category deleted successfully');
+        setCategories((prev) => prev.filter((category) => category._id !== id));
+        setFilteredCategories((prev) => prev.filter((category) => category._id !== id));
       }
     } catch (error) {
-      if(error.response) {
-        alert(error.response.data.error);
+      if (error.response) {
+        toast.error(error.response.data.error || 'Failed to delete');
       } else {
-      alert(error.message)
-    }
+        toast.error(error.message || 'Failed to delete');
+      }
     } 
   };
 
@@ -114,21 +126,52 @@ const Categories = () => {
     setFormDescription('');
   };
 
+  // Toast notification component
+  const toast = {
+    success: (message) => alert(message), // Replace with your toast implementation
+    error: (message) => alert(message)    // Replace with your toast implementation
+  };
+
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Category Management</h1>
+    <div className="container mx-auto p-6 bg-gray-50 min-h-screen">
+      <div className="flex flex-col md:flex-row items-center justify-between mb-8">
+        <h1 className="text-3xl font-bold text-gray-800">Category Management</h1>
+        <div className="relative w-full md:w-64 mt-4 md:mt-0">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search className="h-5 w-5 text-gray-400" />
+          </div>
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={handleSearchInput}
+            placeholder="Search categories..."
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+      </div>
       
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Left Column - Add/Edit Form */}
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Form Card */}
         <div className="lg:w-1/3">
-          <div className="bg-white p-4 rounded-lg shadow">
-            <h2 className="text-lg font-semibold mb-4">
-              {editingId ? 'Edit Category' : 'Add New Category'}
+          <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100">
+            <h2 className="text-xl font-semibold mb-6 flex items-center text-gray-800">
+              {editingId ? (
+                <>
+                  <Edit className="h-5 w-5 mr-2 text-yellow-500" />
+                  Edit Category
+                </>
+              ) : (
+                <>
+                  <PlusCircle className="h-5 w-5 mr-2 text-blue-500" />
+                  Add New Category
+                </>
+              )}
             </h2>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            
+            <form onSubmit={handleSubmit} className="flex flex-col gap-5">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Category Name
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Category Name*
                 </label>
                 <input
                   type="text"
@@ -136,34 +179,48 @@ const Categories = () => {
                   value={formCategory}
                   onChange={(e) => setFormCategory(e.target.value)}
                   placeholder="Enter category name"
-                  className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
+              
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Description
                 </label>
                 <textarea
                   value={formDescription}
                   onChange={(e) => setFormDescription(e.target.value)}
                   placeholder="Category description (optional)"
-                  className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   rows="3"
                 />
               </div>
-              <div className="flex gap-2">
+              
+              <div className="flex gap-3 mt-2">
                 <button
                   type="submit"
-                  className={`flex-1 ${editingId ? 'bg-green-500 hover:bg-green-600' : 'bg-blue-500 hover:bg-blue-600'} text-white px-4 py-2 rounded-md`}
+                  disabled={submitting}
+                  className={`flex-1 flex items-center justify-center ${
+                    editingId ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-blue-500 hover:bg-blue-600'
+                  } text-white px-4 py-3 rounded-lg transition duration-200 ease-in-out`}
                 >
+                  {submitting ? (
+                    <Loader className="h-5 w-5 animate-spin mr-2" />
+                  ) : editingId ? (
+                    <Save className="h-5 w-5 mr-2" />
+                  ) : (
+                    <PlusCircle className="h-5 w-5 mr-2" />
+                  )}
                   {editingId ? 'Save Changes' : 'Add Category'}
                 </button>
+                
                 {editingId && (
                   <button
                     type="button"
                     onClick={handleCancelEdit}
-                    className="flex-1 bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+                    className="flex-1 flex items-center justify-center bg-gray-500 text-white px-4 py-3 rounded-lg hover:bg-gray-600 transition duration-200 ease-in-out"
                   >
+                    <X className="h-5 w-5 mr-2" />
                     Cancel
                   </button>
                 )}
@@ -172,52 +229,83 @@ const Categories = () => {
           </div>
         </div>
 
-        {/* Right Column - Table and Search */}
+        {/* Categories Table */}
         <div className="lg:w-2/3">
-          <div className="mb-4">
-            <input
-              type="text"
-              onChange={handleSearchInput}
-              placeholder="Search categories..."
-              className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div className="overflow-x-auto bg-white rounded-lg shadow">
-            <table className="min-w-full">
-              <thead>
-                <tr className="bg-gray-100">
-                  <th className="p-2 text-left">ID</th>
-                  <th className="p-2 text-left">Name</th>
-                  <th className="p-2 text-left">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredCategories.map((category, index) => (
-                  <tr key={index} className="border-t">
-                    <td className="p-2">{index + 1}</td>
-                    <td className="p-2">{category.name}</td>
-                    <td className="p-2 flex gap-2">
-                      <button
-                        onClick={() => handleEdit(category)}
-                        className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600"
-                        disabled={editingId === category._id}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(category._id)}
-                        className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {filteredCategories.length === 0 && (
-              <p className="text-center p-4 text-gray-500">No categories found</p>
+          <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-xl font-semibold text-gray-800">Categories List</h2>
+            </div>
+            
+            {loading ? (
+              <div className="flex items-center justify-center p-12">
+                <Loader className="h-8 w-8 text-blue-500 animate-spin" />
+                <span className="ml-2 text-gray-600">Loading categories...</span>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {filteredCategories.length > 0 ? (
+                      filteredCategories.map((category, index) => (
+                        <tr key={category._id} className={editingId === category._id ? 'bg-blue-50' : 'hover:bg-gray-50'}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{index + 1}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{category.name}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {category.description || '-'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleEdit(category)}
+                                disabled={editingId === category._id}
+                                className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white ${
+                                  editingId === category._id
+                                    ? 'bg-gray-400 cursor-not-allowed'
+                                    : 'bg-yellow-500 hover:bg-yellow-600'
+                                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition duration-200 ease-in-out`}
+                              >
+                                <Edit className="h-4 w-4 mr-1" />
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDelete(category._id, category.name)}
+                                className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-500 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-200 ease-in-out"
+                              >
+                                <Trash2 className="h-4 w-4 mr-1" />
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="4" className="px-6 py-12 text-center text-sm text-gray-500">
+                          {searchTerm ? (
+                            <div className="flex flex-col items-center">
+                              <Search className="h-8 w-8 text-gray-400 mb-2" />
+                              <p>No categories found matching "{searchTerm}"</p>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col items-center">
+                              <PlusCircle className="h-8 w-8 text-gray-400 mb-2" />
+                              <p>No categories found. Add your first category!</p>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </div>
