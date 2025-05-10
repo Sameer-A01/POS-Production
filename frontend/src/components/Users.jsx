@@ -1,6 +1,9 @@
-// Users.jsx
 import React, { useState, useEffect } from "react";
 import axiosInstance from "../utils/api";
+import { motion, AnimatePresence } from "framer-motion";
+import { FiEdit2, FiTrash2, FiUserPlus, FiSearch, FiLoader } from "react-icons/fi";
+import { BsShieldLock, BsPerson } from "react-icons/bs";
+import { RiAdminLine } from "react-icons/ri";
 
 const Users = () => {
   const [users, setUsers] = useState([]);
@@ -12,7 +15,10 @@ const Users = () => {
     password: "",
     role: "",
   });
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -37,197 +43,396 @@ const Users = () => {
     fetchUsers();
   }, []);
 
+  useEffect(() => {
+    const filtered = users.filter(user =>
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.role.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredUsers(filtered);
+  }, [searchTerm, users]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
-    // Add new category
     try {
       const token = localStorage.getItem("ims_token");
-      const response = await axiosInstance.post("/users/add", formData, {
+      const endpoint = editingId ? `/users/${editingId}` : "/users/add";
+      const method = editingId ? "put" : "post";
+      
+      const response = await axiosInstance[method](endpoint, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
+      
       if (response.data.success) {
         fetchUsers();
+        resetForm();
       }
     } catch (error) {
       alert(error.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleSearchInput = (e) => {
-    setFilteredUsers(
-      users.filter((user) =>
-        user.name.toLowerCase().includes(e.target.value.toLowerCase())
-      )
-    );
+  const handleEdit = (user) => {
+    setFormData({
+      name: user.name,
+      address: user.address,
+      email: user.email,
+      password: "",
+      role: user.role,
+    });
+    setEditingId(user._id);
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      address: "",
+      email: "",
+      password: "",
+      role: "",
+    });
+    setEditingId(null);
   };
 
   const handleDelete = async (id) => {
-    try {
-      const response = await axiosInstance.delete(`/users/${id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("ims_token")}`,
-        },
-      });
-      if (response.data.success) {
-        setUsers((prev) => prev.filter((user) => user._id !== id));
-        setFilteredUsers((prev) =>
-          prev.filter((user) => user._id !== id)
-        );
+    if (window.confirm("Are you sure you want to delete this user?")) {
+      try {
+        const response = await axiosInstance.delete(`/users/${id}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("ims_token")}`,
+          },
+        });
+        if (response.data.success) {
+          setUsers(prev => prev.filter(user => user._id !== id));
+          setFilteredUsers(prev => prev.filter(user => user._id !== id));
+        }
+      } catch (error) {
+        alert(error.message);
       }
-    } catch (error) {
-      alert(error.message);
+    }
+  };
+
+  const getRoleIcon = (role) => {
+    switch (role) {
+      case "admin":
+        return <RiAdminLine className="text-purple-600" />;
+      case "user":
+        return <BsPerson className="text-blue-500" />;
+      default:
+        return <BsShieldLock className="text-gray-500" />;
+    }
+  };
+
+  const getRoleColor = (role) => {
+    switch (role) {
+      case "admin":
+        return "bg-purple-100 text-purple-800";
+      case "user":
+        return "bg-blue-100 text-blue-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center">
+          <FiLoader className="animate-spin text-4xl text-blue-500 mb-4" />
+          <p className="text-lg text-gray-600">Loading users...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Users Management</h1>
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="container mx-auto px-4 py-8"
+    >
+      <div className="flex justify-between items-center mb-8">
+        <motion.h1 
+          initial={{ y: -20 }}
+          animate={{ y: 0 }}
+          className="text-3xl font-bold text-gray-800"
+        >
+          User Management
+        </motion.h1>
+        <div className="relative w-64">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <FiSearch className="text-gray-400" />
+          </div>
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search users..."
+            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+      </div>
 
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Left Column - Add/Edit Form */}
-        <div className="lg:w-1/3">
-          <div className="bg-white p-4 rounded-lg shadow">
-            <h2 className="text-lg font-semibold mb-4">
-              Add New User
-            </h2>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Add/Edit User Form */}
+        <div className="lg:col-span-1">
+          <motion.div 
+            initial={{ x: -20 }}
+            animate={{ x: 0 }}
+            className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100"
+          >
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-4 text-white">
+              <h2 className="text-xl font-semibold flex items-center">
+                <FiUserPlus className="mr-2" />
+                {editingId ? "Edit User" : "Add New User"}
+              </h2>
+            </div>
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  User Name
+                  Full Name
                 </label>
                 <input
                   type="text"
                   name="name"
+                  value={formData.name}
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
-                  placeholder="Enter Name"
-                  className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="John Doe"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                  required
                 />
               </div>
+              
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  User Email
+                  Email Address
                 </label>
                 <input
                   type="email"
                   name="email"
+                  value={formData.email}
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
-                  placeholder="Enter Email"
-                  className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="user@example.com"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                  required
                 />
               </div>
+              
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Password
+                  {editingId ? "New Password (leave blank to keep current)" : "Password"}
                 </label>
                 <input
                   type="password"
                   name="password"
+                  value={formData.password}
                   onChange={(e) =>
                     setFormData({ ...formData, password: e.target.value })
                   }
-                  placeholder="*******"
-                  className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="••••••••"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                  required={!editingId}
+                  minLength={editingId ? 0 : 6}
                 />
               </div>
+              
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  User Address
+                  Address
                 </label>
                 <input
                   type="text"
                   name="address"
+                  value={formData.address}
                   onChange={(e) =>
                     setFormData({ ...formData, address: e.target.value })
                   }
-                  placeholder="Enter Address"
-                  className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="123 Main St, City"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                 />
               </div>
-              <select
-                name="role"
-                id=""
-                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select Role</option>
-                <option value="admin">Admin</option>
-                <option value="user">User</option>
-              </select>
-              <div className="flex gap-2">
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Role
+                </label>
+                <select
+                  name="role"
+                  value={formData.role}
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition appearance-none bg-white"
+                  required
+                >
+                  <option value="">Select a role</option>
+                  <option value="admin">Administrator</option>
+                  <option value="user">Standard User</option>
+                </select>
+              </div>
+              
+              <div className="flex space-x-3 pt-2">
                 <button
                   type="submit"
-                  className={`flex-1 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md`}
+                  disabled={isSubmitting}
+                  className={`flex-1 flex items-center justify-center px-4 py-2 rounded-lg text-white font-medium transition ${
+                    isSubmitting
+                      ? "bg-blue-400 cursor-not-allowed"
+                      : "bg-blue-600 hover:bg-blue-700"
+                  }`}
                 >
-                  Add User
+                  {isSubmitting ? (
+                    <>
+                      <FiLoader className="animate-spin mr-2" />
+                      Processing...
+                    </>
+                  ) : editingId ? (
+                    "Update User"
+                  ) : (
+                    "Add User"
+                  )}
                 </button>
+                
+                {editingId && (
+                  <button
+                    type="button"
+                    onClick={resetForm}
+                    className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
+                  >
+                    Cancel
+                  </button>
+                )}
               </div>
             </form>
-          </div>
+          </motion.div>
         </div>
 
-        {/* Right Column - Table and Search */}
-        <div className="lg:w-2/3">
-          <div className="mb-4">
-            <input
-              type="text"
-              onChange={handleSearchInput}
-              placeholder="Search users..."
-              className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div className="overflow-x-auto bg-white rounded-lg shadow">
-            <table className="min-w-full">
-              <thead>
-                <tr className="bg-gray-100">
-                  <th className="p-2 text-left">ID</th>
-                  <th className="p-2 text-left">Name</th>
-                  <th className="p-2 text-left">Email</th>
-                  <th className="p-2 text-left">Role</th>
-                  <th className="p-2 text-left">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredUsers.map((user, index) => (
-                  <tr key={index} className="border-t">
-                    <td className="p-2">{index + 1}</td>
-                    <td className="p-2">{user.name}</td>
-                    <td className="p-2">{user.email}</td>
-                    <td className="p-2">{user.role}</td>
-                    <td className="p-2 flex gap-2">
-                      <button
-                      onClick={() => {
-                        if (window.confirm(`Are you sure you want to delete ${user.name}?`)) {
-                          handleDelete(user._id);
-                        }
-                      }}
-                        className="text-red-500 font-bold"
-                      >
-                        Delete
-                      </button>
-                    </td>
+        {/* Users Table */}
+        <div className="lg:col-span-2">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100"
+          >
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-4 text-white">
+              <h2 className="text-xl font-semibold flex items-center">
+                <BsShieldLock className="mr-2" />
+                User Directory
+              </h2>
+              <p className="text-sm text-blue-100 mt-1">
+                {filteredUsers.length} {filteredUsers.length === 1 ? "user" : "users"} found
+              </p>
+            </div>
+            
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      User
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Email
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Role
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-            {filteredUsers.length === 0 && (
-              <p className="text-center p-4 text-gray-500">No User found</p>
-            )}
-          </div>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  <AnimatePresence>
+                    {filteredUsers.length > 0 ? (
+                      filteredUsers.map((user) => (
+                        <motion.tr
+                          key={user._id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, x: -20 }}
+                          transition={{ duration: 0.2 }}
+                          className="hover:bg-gray-50"
+                        >
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                                {getRoleIcon(user.role)}
+                              </div>
+                              <div className="ml-4">
+                                <div className="text-sm font-medium text-gray-900">
+                                  {user.name}
+                                </div>
+                                <div className="text-sm text-gray-500">
+                                  {user.address}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {user.email}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span
+                              className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getRoleColor(
+                                user.role
+                              )}`}
+                            >
+                              {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div className="flex space-x-3">
+                              <button
+                                onClick={() => handleEdit(user)}
+                                className="text-blue-600 hover:text-blue-900 transition"
+                                title="Edit user"
+                              >
+                                <FiEdit2 />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(user._id)}
+                                className="text-red-600 hover:text-red-900 transition"
+                                title="Delete user"
+                              >
+                                <FiTrash2 />
+                              </button>
+                            </div>
+                          </td>
+                        </motion.tr>
+                      ))
+                    ) : (
+                      <motion.tr
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="h-32"
+                      >
+                        <td colSpan="4" className="text-center py-10">
+                          <div className="flex flex-col items-center justify-center text-gray-400">
+                            <FiSearch className="text-3xl mb-2" />
+                            <p>No users found matching your criteria</p>
+                          </div>
+                        </td>
+                      </motion.tr>
+                    )}
+                  </AnimatePresence>
+                </tbody>
+              </table>
+            </div>
+          </motion.div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
