@@ -4,10 +4,11 @@ import Order from "../models/Order.js";
 const getSummary = async (req, res) => {
     try {
       // Total Products
-      const totalProducts = await Product.countDocuments();
+      const totalProducts = await Product.countDocuments({ isDeleted: false });
 
       // Total Stock
       const stockResult = await Product.aggregate([
+        { $match: { isDeleted: false } }, // Only count non-deleted
         { $group: { _id: null, totalStock: { $sum: '$stock' } } }
       ]);
       const totalStock = stockResult[0]?.totalStock || 0;

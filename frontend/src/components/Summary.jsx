@@ -9,7 +9,8 @@ import {
   FiCreditCard,
   FiBox,
   FiDatabase,
-  FiAward
+  FiAward,
+  FiRefreshCw
 } from "react-icons/fi";
 
 const Summary = () => {
@@ -23,6 +24,7 @@ const Summary = () => {
     lowStock: [],
   });
   const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
   const navigate = useNavigate();
 
   // Format currency in Indian Rupees with proper symbol
@@ -33,6 +35,11 @@ const Summary = () => {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(amount).replace('₹', '₹ ');
+  };
+
+  // Function to refresh dashboard data
+  const refreshDashboard = () => {
+    setRefreshKey(prev => prev + 1);
   };
 
   useEffect(() => {
@@ -55,7 +62,7 @@ const Summary = () => {
       }
     };
     fetchDashboardData();
-  }, []);
+  }, [refreshKey, navigate]);
 
   if(loading) return (
     <div className="flex items-center justify-center h-screen">
@@ -71,13 +78,22 @@ const Summary = () => {
           <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Inventory Dashboard</h1>
           <p className="text-gray-600 mt-1">Business overview and analytics</p>
         </div>
-        <div className="text-sm text-gray-600 bg-white px-4 py-2 rounded-lg shadow-xs border border-gray-200">
-          {new Date().toLocaleDateString('en-IN', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'short', 
-            day: 'numeric' 
-          })}
+        <div className="flex items-center gap-3">
+          <div className="text-sm text-gray-600 bg-white px-4 py-2 rounded-lg shadow-xs border border-gray-200">
+            {new Date().toLocaleDateString('en-IN', { 
+              weekday: 'long', 
+              year: 'numeric', 
+              month: 'short', 
+              day: 'numeric' 
+            })}
+          </div>
+          <button 
+            onClick={refreshDashboard}
+            className="p-2 bg-white rounded-lg shadow-xs border border-gray-200 hover:bg-gray-50 transition-colors"
+            title="Refresh dashboard"
+          >
+            <FiRefreshCw className="text-gray-600" />
+          </button>
         </div>
       </div>
 
@@ -214,15 +230,8 @@ const Summary = () => {
                 </div>
               </div>
               
-              {/* Sales Performance Visual */}
               <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
                 <div className="mb-3">
-                  {/* <div className="flex justify-between text-xs text-gray-500 mb-1">
-                    <span>Sales Volume</span>
-                    <span className="font-medium text-blue-600">
-                      {dashboardData.highestSaleProduct.totalQuantity || 0} units
-                    </span>
-                  </div> */}
                   <div className="w-full bg-gray-200 rounded-full h-1.5">
                     <div 
                       className="h-1.5 rounded-full bg-gradient-to-r from-blue-400 to-indigo-500" 
@@ -238,12 +247,6 @@ const Summary = () => {
                 </div>
                 
                 <div>
-                  {/* <div className="flex justify-between text-xs text-gray-500 mb-1">
-                    <span>Revenue Generated</span>
-                    <span className="font-medium text-purple-600">
-                      {formatRupee(dashboardData.highestSaleProduct.totalRevenue || 0)}
-                    </span>
-                  </div> */}
                   <div className="w-full bg-gray-200 rounded-full h-1.5">
                     <div 
                       className="h-1.5 rounded-full bg-gradient-to-r from-purple-400 to-fuchsia-500" 

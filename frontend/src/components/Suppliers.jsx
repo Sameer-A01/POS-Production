@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axiosInstance from "../utils/api";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiSearch, FiPlus, FiEdit2, FiTrash2, FiX, FiPhone, FiMail, FiMapPin, FiUser } from "react-icons/fi";
+import { FiSearch, FiPlus, FiEdit2, FiTrash2, FiX, FiPhone, FiMail, FiMapPin, FiUser, FiInfo } from "react-icons/fi";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -18,6 +18,7 @@ const Suppliers = () => {
   });
   const [editingId, setEditingId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [expandedCard, setExpandedCard] = useState(null);
 
   const fetchSuppliers = async () => {
     setLoading(true);
@@ -130,6 +131,10 @@ const Suppliers = () => {
     setFormData({ name: "", email: "", phone: "", address: "" });
   };
 
+  const toggleCardExpand = (id) => {
+    setExpandedCard(expandedCard === id ? null : id);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -141,6 +146,107 @@ const Suppliers = () => {
     );
   }
 
+  // Responsive card view for mobile
+  const MobileCardView = () => (
+    <div className="grid grid-cols-1 gap-4 mt-4">
+      <AnimatePresence>
+        {filteredSuppliers.length > 0 ? (
+          filteredSuppliers.map((supplier) => (
+            <motion.div
+              key={supplier._id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.2 }}
+              className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100"
+            >
+              <div 
+                className="flex justify-between items-center p-4 cursor-pointer"
+                onClick={() => toggleCardExpand(supplier._id)}
+              >
+                <div className="flex items-center">
+                  <div className="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                    <FiUser />
+                  </div>
+                  <div className="ml-4">
+                    <div className="text-md font-medium text-gray-900">{supplier.name}</div>
+                    <div className="text-sm text-gray-500 truncate max-w-xs">{supplier.email || "No email provided"}</div>
+                  </div>
+                </div>
+                <div className="text-gray-400">
+                  <FiInfo size={20} />
+                </div>
+              </div>
+              
+              {expandedCard === supplier._id && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="border-t border-gray-100 px-4 py-3 bg-gray-50"
+                >
+                  <div className="mb-3">
+                    <div className="flex items-center mb-1">
+                      <FiMail className="mr-2 text-gray-500" />
+                      <span className="text-sm text-gray-700">
+                        {supplier.email || "No email provided"}
+                      </span>
+                    </div>
+                    <div className="flex items-center mb-1">
+                      <FiPhone className="mr-2 text-gray-500" />
+                      <span className="text-sm text-gray-700">
+                        {supplier.phone || "No phone provided"}
+                      </span>
+                    </div>
+                    <div className="flex items-start">
+                      <FiMapPin className="mr-2 mt-1 flex-shrink-0 text-gray-500" />
+                      <span className="text-sm text-gray-700">
+                        {supplier.address || "No address provided"}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-end space-x-4 pt-2 border-t border-gray-200">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit(supplier);
+                      }}
+                      className="text-blue-600 hover:text-blue-900 transition p-2"
+                    >
+                      <FiEdit2 size={18} />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(supplier._id);
+                      }}
+                      className="text-red-600 hover:text-red-900 transition p-2"
+                    >
+                      <FiTrash2 size={18} />
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </motion.div>
+          ))
+        ) : (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="bg-white rounded-lg shadow p-6 text-center"
+          >
+            <div className="flex flex-col items-center justify-center text-gray-400">
+              <FiSearch className="text-3xl mb-2" />
+              <p>No suppliers found matching your criteria</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -148,11 +254,11 @@ const Suppliers = () => {
       transition={{ duration: 0.5 }}
       className="container mx-auto px-4 py-8"
     >
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
         <motion.h1
           initial={{ y: -20 }}
           animate={{ y: 0 }}
-          className="text-3xl font-bold text-gray-800 mb-4 md:mb-0"
+          className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 md:mb-0"
         >
           Supplier Management
         </motion.h1>
@@ -183,106 +289,113 @@ const Suppliers = () => {
         </div>
       </div>
 
-      {/* Suppliers Table */}
-      <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Contact
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Address
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              <AnimatePresence>
-                {filteredSuppliers.length > 0 ? (
-                  filteredSuppliers.map((supplier) => (
-                    <motion.tr
-                      key={supplier._id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, x: -20 }}
-                      transition={{ duration: 0.2 }}
-                      className="hover:bg-gray-50"
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                            <FiUser />
-                          </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">
-                              {supplier.name}
+      {/* Responsive Views: Table for desktop, Cards for mobile */}
+      <div className="hidden md:block"> {/* Table view for desktop */}
+        <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Contact
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Address
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                <AnimatePresence>
+                  {filteredSuppliers.length > 0 ? (
+                    filteredSuppliers.map((supplier) => (
+                      <motion.tr
+                        key={supplier._id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.2 }}
+                        className="hover:bg-gray-50"
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                              <FiUser />
+                            </div>
+                            <div className="ml-4">
+                              <div className="text-sm font-medium text-gray-900">
+                                {supplier.name}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          <div className="flex items-center">
-                            <FiMail className="mr-2 text-gray-500" />
-                            {supplier.email || "-"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">
+                            <div className="flex items-center">
+                              <FiMail className="mr-2 text-gray-500" />
+                              {supplier.email || "-"}
+                            </div>
+                            <div className="flex items-center mt-1">
+                              <FiPhone className="mr-2 text-gray-500" />
+                              {supplier.phone || "-"}
+                            </div>
                           </div>
-                          <div className="flex items-center mt-1">
-                            <FiPhone className="mr-2 text-gray-500" />
-                            {supplier.phone || "-"}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm text-gray-500 flex items-start">
+                            <FiMapPin className="mr-2 mt-1 flex-shrink-0 text-gray-400" />
+                            {supplier.address || "-"}
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-500 flex items-start">
-                          <FiMapPin className="mr-2 mt-1 flex-shrink-0 text-gray-400" />
-                          {supplier.address || "-"}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-3">
-                          <button
-                            onClick={() => handleEdit(supplier)}
-                            className="text-blue-600 hover:text-blue-900 transition"
-                            title="Edit supplier"
-                          >
-                            <FiEdit2 />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(supplier._id)}
-                            className="text-red-600 hover:text-red-900 transition"
-                            title="Delete supplier"
-                          >
-                            <FiTrash2 />
-                          </button>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <div className="flex space-x-3">
+                            <button
+                              onClick={() => handleEdit(supplier)}
+                              className="text-blue-600 hover:text-blue-900 transition"
+                              title="Edit supplier"
+                            >
+                              <FiEdit2 />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(supplier._id)}
+                              className="text-red-600 hover:text-red-900 transition"
+                              title="Delete supplier"
+                            >
+                              <FiTrash2 />
+                            </button>
+                          </div>
+                        </td>
+                      </motion.tr>
+                    ))
+                  ) : (
+                    <motion.tr
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="h-32"
+                    >
+                      <td colSpan="4" className="text-center py-10">
+                        <div className="flex flex-col items-center justify-center text-gray-400">
+                          <FiSearch className="text-3xl mb-2" />
+                          <p>No suppliers found matching your criteria</p>
                         </div>
                       </td>
                     </motion.tr>
-                  ))
-                ) : (
-                  <motion.tr
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="h-32"
-                  >
-                    <td colSpan="4" className="text-center py-10">
-                      <div className="flex flex-col items-center justify-center text-gray-400">
-                        <FiSearch className="text-3xl mb-2" />
-                        <p>No suppliers found matching your criteria</p>
-                      </div>
-                    </td>
-                  </motion.tr>
-                )}
-              </AnimatePresence>
-            </tbody>
-          </table>
+                  )}
+                </AnimatePresence>
+              </tbody>
+            </table>
+          </div>
         </div>
+      </div>
+
+      {/* Card view for mobile */}
+      <div className="md:hidden">
+        <MobileCardView />
       </div>
 
       {/* Add/Edit Supplier Modal */}
@@ -298,7 +411,7 @@ const Suppliers = () => {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 20, opacity: 0 }}
-              className="bg-white rounded-xl shadow-xl w-full max-w-md"
+              className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4"
             >
               <div className="bg-gradient-to-r from-blue-600 to-blue-500 p-4 text-white rounded-t-xl">
                 <div className="flex justify-between items-center">
@@ -314,7 +427,7 @@ const Suppliers = () => {
                 </div>
               </div>
 
-              <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Name *
@@ -330,7 +443,7 @@ const Suppliers = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Email
@@ -374,7 +487,7 @@ const Suppliers = () => {
                   />
                 </div>
 
-                <div className="flex justify-end space-x-3 pt-4">
+                <div className="flex flex-col sm:flex-row gap-2 sm:justify-end sm:space-x-3 pt-4">
                   <button
                     type="button"
                     onClick={closeModal}
@@ -384,7 +497,7 @@ const Suppliers = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center justify-center"
                   >
                     {editingId ? (
                       <>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axiosInstance from "../utils/api";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiEdit2, FiTrash2, FiUserPlus, FiSearch, FiLoader } from "react-icons/fi";
+import { FiEdit2, FiTrash2, FiUserPlus, FiSearch, FiLoader, FiMenu } from "react-icons/fi";
 import { BsShieldLock, BsPerson } from "react-icons/bs";
 import { RiAdminLine } from "react-icons/ri";
 
@@ -19,6 +19,7 @@ const Users = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showForm, setShowForm] = useState(false);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -70,6 +71,9 @@ const Users = () => {
       if (response.data.success) {
         fetchUsers();
         resetForm();
+        if (window.innerWidth < 1024) {
+          setShowForm(false);
+        }
       }
     } catch (error) {
       alert(error.message);
@@ -87,6 +91,12 @@ const Users = () => {
       role: user.role,
     });
     setEditingId(user._id);
+    
+    // Show form when editing on mobile
+    if (window.innerWidth < 1024) {
+      setShowForm(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   const resetForm = () => {
@@ -140,6 +150,11 @@ const Users = () => {
     }
   };
 
+  const toggleForm = () => {
+    setShowForm(!showForm);
+    resetForm();
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -158,31 +173,49 @@ const Users = () => {
       transition={{ duration: 0.5 }}
       className="container mx-auto px-4 py-8"
     >
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <motion.h1 
           initial={{ y: -20 }}
           animate={{ y: 0 }}
-          className="text-3xl font-bold text-gray-800"
+          className="text-2xl md:text-3xl font-bold text-gray-800"
         >
           User Management
         </motion.h1>
-        <div className="relative w-64">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <FiSearch className="text-gray-400" />
+        
+        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+          <div className="relative flex-grow">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <FiSearch className="text-gray-400" />
+            </div>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search users..."
+              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
           </div>
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search users..."
-            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
+          
+          {/* Mobile-only Add/Edit button */}
+          <button 
+            onClick={toggleForm}
+            className="lg:hidden flex items-center justify-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+          >
+            {showForm ? (
+              "Hide Form"
+            ) : (
+              <>
+                <FiUserPlus className="mr-2" />
+                {editingId ? "Edit User" : "Add User"}
+              </>
+            )}
+          </button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Add/Edit User Form */}
-        <div className="lg:col-span-1">
+        <div className={`lg:col-span-1 ${!showForm && 'hidden lg:block'}`}>
           <motion.div 
             initial={{ x: -20 }}
             animate={{ x: 0 }}
@@ -280,7 +313,7 @@ const Users = () => {
                 </select>
               </div>
               
-              <div className="flex space-x-3 pt-2">
+              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 pt-2">
                 <button
                   type="submit"
                   disabled={isSubmitting}
@@ -317,7 +350,7 @@ const Users = () => {
         </div>
 
         {/* Users Table */}
-        <div className="lg:col-span-2">
+        <div className={`lg:col-span-2 ${showForm && 'mt-8 lg:mt-0'}`}>
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -334,7 +367,73 @@ const Users = () => {
               </p>
             </div>
             
-            <div className="overflow-x-auto">
+            {/* Mobile Card View */}
+            <div className="block lg:hidden">
+              {filteredUsers.length > 0 ? (
+                <div className="divide-y divide-gray-200">
+                  <AnimatePresence>
+                    {filteredUsers.map((user) => (
+                      <motion.div
+                        key={user._id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.2 }}
+                        className="p-4 hover:bg-gray-50"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center">
+                            <div className="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                              {getRoleIcon(user.role)}
+                            </div>
+                            <div className="ml-3">
+                              <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                              <div className="text-xs text-gray-500">{user.email}</div>
+                              {user.address && (
+                                <div className="text-xs text-gray-500 mt-1">{user.address}</div>
+                              )}
+                              <div className="mt-1">
+                                <span
+                                  className={`px-2 py-1 inline-flex text-xs leading-4 font-semibold rounded-full ${getRoleColor(
+                                    user.role
+                                  )}`}
+                                >
+                                  {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex space-x-3">
+                            <button
+                              onClick={() => handleEdit(user)}
+                              className="text-blue-600 hover:text-blue-900 p-1 transition"
+                              title="Edit user"
+                            >
+                              <FiEdit2 size={18} />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(user._id)}
+                              className="text-red-600 hover:text-red-900 p-1 transition"
+                              title="Delete user"
+                            >
+                              <FiTrash2 size={18} />
+                            </button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12 px-4 text-gray-400">
+                  <FiSearch className="text-3xl mb-2" />
+                  <p>No users found matching your criteria</p>
+                </div>
+              )}
+            </div>
+            
+            {/* Desktop Table View */}
+            <div className="hidden lg:block overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
