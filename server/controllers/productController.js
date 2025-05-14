@@ -1,6 +1,9 @@
 import Category from "../models/Category.js";
 import Product from "../models/Product.js";
 import Supplier from "../models/Supplier.js";
+import fs from "fs";
+import path from "path";
+const uploadDir = path.resolve("uploads"); // Update if your path is different
 
 // Route to add a new employee
 const addProduct = async (req, res) => {
@@ -44,15 +47,27 @@ const getProducts = async (req, res) => {
   }
 };
 
+// Route to update product
 const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description, price, stock, category, supplier, removeImage } = req.body;
+    const {
+      name,
+      description,
+      price,
+      stock,
+      category,
+      supplier,
+      removeImage,
+    } = req.body;
+
     const image = req.file ? req.file.filename : undefined;
 
     const product = await Product.findById(id);
     if (!product) {
-      return res.status(404).json({ success: false, error: "Product Not Found" });
+      return res
+        .status(404)
+        .json({ success: false, error: "Product Not Found" });
     }
 
     const updatedFields = {
@@ -64,18 +79,40 @@ const updateProduct = async (req, res) => {
       supplier,
     };
 
+    // Case: new image uploaded
     if (image) {
+      if (product.image) {
+        const oldPath = path.join(uploadDir, product.image);
+        fs.unlink(oldPath, (err) => {
+          if (err) console.error("Error deleting old image:", err);
+        });
+      }
       updatedFields.image = image;
-    } else if (removeImage === "true") {
-      updatedFields.image = undefined;
     }
 
-    const updatedProduct = await Product.findByIdAndUpdate(id, updatedFields, { new: true });
+    // Case: image removed
+    if (removeImage === "true") {
+      if (product.image) {
+        const oldPath = path.join(uploadDir, product.image);
+        fs.unlink(oldPath, (err) => {
+          if (err) console.error("Error deleting removed image:", err);
+        });
+      }
+      updatedFields.image = null; // important: remove image in MongoDB
+    }
+
+    const updatedProduct = await Product.findByIdAndUpdate(
+      id,
+      updatedFields,
+      { new: true }
+    );
 
     res.status(200).json({ success: true, updatedProduct });
   } catch (error) {
     console.error("Error updating product:", error);
-    res.status(500).json({ success: false, error: "Server error " + error.message });
+    res
+      .status(500)
+      .json({ success: false, error: "Server error " + error.message });
   }
 };
 
