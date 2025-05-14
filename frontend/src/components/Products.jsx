@@ -15,7 +15,9 @@ const Products = () => {
     stock: "",
     category: "",
     supplier: "",
+    image: null
   });
+  const [previewImage, setPreviewImage] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState({ show: false, productId: null, productName: "" });
 
@@ -57,19 +59,62 @@ const Products = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData((prev) => ({ ...prev, image: file }));
+      
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name.trim()) return;
-
+  
     try {
+      const formDataToSend = new FormData();
+      formDataToSend.append("name", formData.name);
+      formDataToSend.append("description", formData.description);
+      formDataToSend.append("price", formData.price);
+      formDataToSend.append("stock", formData.stock);
+      formDataToSend.append("category", formData.category);
+      formDataToSend.append("supplier", formData.supplier);
+  
+      // Handle image differently for edit vs add
       if (editingId) {
-        // Edit existing product
+        // For editing, we need to handle three cases:
+        // 1. New image uploaded
+        // 2. Existing image removed
+        // 3. No change to image
+        if (formData.image) {
+          // Case 1: New image uploaded
+          formDataToSend.append("image", formData.image);
+        } else if (previewImage === "" && formData.image === null) {
+          // Case 2: Image was removed
+          formDataToSend.append("removeImage", "true");
+        }
+        // Case 3: No change (don't send anything about image)
+      } else {
+        // For new product, just append if image exists
+        if (formData.image) {
+          formDataToSend.append("image", formData.image);
+        }
+      }
+  
+      if (editingId) {
         const response = await axiosInstance.put(
           `/products/${editingId}`,
-          formData,
+          formDataToSend,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("ims_token")}`,
+              "Content-Type": "multipart/form-data",
             },
           }
         );
@@ -77,11 +122,11 @@ const Products = () => {
           fetchProducts();
         }
       } else {
-        // Add new product
         const token = localStorage.getItem("ims_token");
-        const response = await axiosInstance.post("/products/add", formData, {
+        const response = await axiosInstance.post("/products/add", formDataToSend, {
           headers: {
             Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
           },
         });
         if (response.data.success) {
@@ -92,7 +137,7 @@ const Products = () => {
       console.error(error);
       alert(error.message);
     }
-
+  
     // Reset form and close modal
     setFormData({
       name: "",
@@ -101,7 +146,9 @@ const Products = () => {
       stock: "",
       category: "",
       supplier: "",
+      image: null
     });
+    setPreviewImage("");
     setIsModalOpen(false);
     setEditingId(null);
   };
@@ -115,7 +162,13 @@ const Products = () => {
       stock: product.stock,
       category: product.category._id,
       supplier: product.supplier._id,
+      image: null
     });
+    setPreviewImage(
+      product.image 
+        ? `http://localhost:5000/uploads/${product.image}`
+        : ""
+    );
     setIsModalOpen(true);
   };
 
@@ -161,7 +214,9 @@ const Products = () => {
       stock: "",
       category: "",
       supplier: "",
+      image: null
     });
+    setPreviewImage("");
   };
 
   // Product card for mobile view
@@ -191,6 +246,15 @@ const Products = () => {
           </button>
         </div>
       </div>
+      {product.image && (
+        <div className="mt-2">
+          <img 
+            src={`http://localhost:5000/uploads/${product.image}`}
+            alt={product.name} 
+            className="h-20 w-20 object-cover rounded-md"
+          />
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-2 mt-3 text-sm">
         <div>
           <span className="text-gray-500">Category:</span>
@@ -312,6 +376,9 @@ const Products = () => {
                     Product
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Image
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Category
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -343,6 +410,15 @@ const Products = () => {
                             </div>
                           </div>
                         </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {product.image && (
+                          <img 
+                            src={`http://localhost:5000/uploads/${product.image}`}
+                            alt={product.name} 
+                            className="h-10 w-10 object-cover rounded-md"
+                          />
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
@@ -389,7 +465,7 @@ const Products = () => {
                 ) : (
                   <tr>
                     <td
-                      colSpan="6"
+                      colSpan="7"
                       className="px-6 py-4 text-center text-sm text-gray-500"
                     >
                       No products found. Try adjusting your search.
@@ -457,6 +533,49 @@ const Products = () => {
                         rows={3}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                       />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Product Image
+                      </label>
+                      <div className="mt-1 flex items-center">
+                        <label className="cursor-pointer">
+                          <span className="inline-block px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Choose File
+                          </span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            className="sr-only"
+                          />
+                        </label>
+                        {previewImage && (
+  <div className="ml-4 relative">
+    <img 
+      src={previewImage.includes('blob:') ? previewImage : previewImage}
+      alt="Preview" 
+      className="h-16 w-16 object-cover rounded-md"
+    />
+    <button
+      type="button"
+      onClick={() => {
+        setPreviewImage("");
+        setFormData(prev => ({ ...prev, image: null }));
+      }}
+      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+      </svg>
+    </button>
+  </div>
+)}
+                      </div>
+                      <p className="mt-1 text-xs text-gray-500">
+                        JPEG, PNG, JPG (Max 2MB)
+                      </p>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

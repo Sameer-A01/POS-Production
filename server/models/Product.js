@@ -31,7 +31,11 @@ const productSchema = new mongoose.Schema({
     ref: 'Supplier',
     required: [true, 'Supplier is required'],
   },
-  isDeleted: {type: Boolean, default: false},
+  image: {
+    type: String, // Store URL or file path
+    default: '', // Optional
+  },
+  isDeleted: { type: Boolean, default: false },
   createdAt: {
     type: Date,
     default: Date.now,

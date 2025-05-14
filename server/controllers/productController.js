@@ -6,21 +6,30 @@ import Supplier from "../models/Supplier.js";
 const addProduct = async (req, res) => {
   try {
     const { name, description, price, stock, category, supplier } = req.body;
+    const image = req.file ? req.file.filename : ''; // ✅ only filename
 
-    // Create new product
     const newProduct = new Product({
-        name, description, price, stock, category, supplier
+      name,
+      description,
+      price,
+      stock,
+      category,
+      supplier,
+      image,
     });
-    const product = await newProduct.save();
 
-    res
-      .status(201)
-      .json({ success: true, message: "Product created successfully" });
+    await newProduct.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Product created successfully",
+    });
   } catch (error) {
     console.error(error.message);
     res.status(500).json({ success: false, error: "Server error" });
   }
 };
+
 
 const getProducts = async (req, res) => {
   try {
@@ -38,26 +47,39 @@ const getProducts = async (req, res) => {
 const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description, price, stock, category, supplier } = req.body;
+    const { name, description, price, stock, category, supplier, removeImage } = req.body;
+    const image = req.file ? req.file.filename : undefined;
 
-    const product = await Product.findById({ _id: id });
+    const product = await Product.findById(id);
     if (!product) {
-      res.status(404).json({ success: false, error: "Product Not Found" });
+      return res.status(404).json({ success: false, error: "Product Not Found" });
     }
 
-    const updateUser = await Product.findByIdAndUpdate(
-      { _id: id },
-      { name, description, price, stock, category, supplier }
-    );
+    const updatedFields = {
+      name,
+      description,
+      price,
+      stock,
+      category,
+      supplier,
+    };
 
-    res.status(201).json({ success: true, updateUser });
+    if (image) {
+      updatedFields.image = image;
+    } else if (removeImage === "true") {
+      updatedFields.image = undefined;
+    }
+
+    const updatedProduct = await Product.findByIdAndUpdate(id, updatedFields, { new: true });
+
+    res.status(200).json({ success: true, updatedProduct });
   } catch (error) {
-    console.error("Error editing employee:", error);
-    res
-      .status(500)
-      .json({ success: false, error: "Server error " + error.message });
+    console.error("Error updating product:", error);
+    res.status(500).json({ success: false, error: "Server error " + error.message });
   }
 };
+
+
 
 const deleteProduct = async (req, res) => {
   try {

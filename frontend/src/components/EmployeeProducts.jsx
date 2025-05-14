@@ -25,7 +25,7 @@ const POSPage = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [showCart, setShowCart] = useState(false);
   const [refreshingProducts, setRefreshingProducts] = useState(false);
-  
+
   const billRef = useRef(null);
 
   // Get user from localStorage
@@ -122,7 +122,7 @@ const POSPage = () => {
         totalAmount: orderData.totalAmount + product.price,
       });
     }
-    
+
     // On mobile, show the cart after adding an item
     if (window.innerWidth < 768) {
       setShowCart(true);
@@ -132,12 +132,12 @@ const POSPage = () => {
   const handleQuantityChange = (productId, quantity) => {
     const product = products.find(p => p._id === productId);
     if (quantity > product.stock) return;
-    
+
     if (quantity < 1) {
       handleRemoveProduct(productId);
       return;
     }
-    
+
     const updatedProducts = orderData.products.map((item) =>
       item.productId === productId
         ? { ...item, quantity }
@@ -194,7 +194,7 @@ const POSPage = () => {
 
   const handlePrintBill = () => {
     const printWindow = window.open('', '_blank');
-    
+
     printWindow.document.write(`
       <!DOCTYPE html>
       <html>
@@ -336,8 +336,8 @@ const POSPage = () => {
             </thead>
             <tbody>
               ${orderData.products.map((item, index) => {
-                const product = products.find((p) => p._id === item.productId);
-                return `
+      const product = products.find((p) => p._id === item.productId);
+      return `
                   <tr>
                     <td>${index + 1}</td>
                     <td>${product?.name}</td>
@@ -346,7 +346,7 @@ const POSPage = () => {
                     <td class="text-right">₹${(product?.price * item.quantity).toFixed(2)}</td>
                   </tr>
                 `;
-              }).join('')}
+    }).join('')}
             </tbody>
           </table>
           
@@ -373,7 +373,7 @@ const POSPage = () => {
       </body>
       </html>
     `);
-    
+
     setTimeout(() => {
       printWindow.document.close();
       printWindow.focus();
@@ -409,7 +409,7 @@ const POSPage = () => {
 
   // Mobile cart toggle button
   const CartToggleButton = () => (
-    <motion.button 
+    <motion.button
       onClick={() => setShowCart(!showCart)}
       className="md:hidden fixed bottom-6 right-6 bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 rounded-full shadow-xl z-30"
       whileTap={{ scale: 0.95 }}
@@ -417,7 +417,7 @@ const POSPage = () => {
     >
       <ShoppingCart size={24} />
       {orderData.products.length > 0 && (
-        <motion.span 
+        <motion.span
           className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center"
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
@@ -444,7 +444,7 @@ const POSPage = () => {
             )}
           </div>
           <div className="flex items-center space-x-3">
-            <motion.button 
+            <motion.button
               onClick={() => setShowSettings(!showSettings)}
               className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-sm transition-colors"
               whileHover={{ y: -1 }}
@@ -459,13 +459,13 @@ const POSPage = () => {
       {/* Settings Modal */}
       <AnimatePresence>
         {showSettings && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
           >
-            <motion.div 
+            <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 20, opacity: 0 }}
@@ -473,8 +473,8 @@ const POSPage = () => {
             >
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-gray-800">Company Settings</h2>
-                <button 
-                  onClick={() => setShowSettings(false)} 
+                <button
+                  onClick={() => setShowSettings(false)}
                   className="text-gray-500 hover:text-gray-700 transition-colors"
                 >
                   <X size={24} />
@@ -551,13 +551,13 @@ const POSPage = () => {
       {/* Bill Modal */}
       <AnimatePresence>
         {showBill && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40 p-4"
           >
-            <motion.div 
+            <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 20, opacity: 0 }}
@@ -565,14 +565,14 @@ const POSPage = () => {
             >
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-gray-800">Invoice</h2>
-                <button 
-                  onClick={handleNewOrder} 
+                <button
+                  onClick={handleNewOrder}
                   className="text-gray-500 hover:text-gray-700 transition-colors"
                 >
                   <X size={24} />
                 </button>
               </div>
-              
+
               <div ref={billRef} className="p-6 border border-gray-200 rounded-lg bg-white">
                 {/* Bill Header */}
                 <div className="text-center mb-6">
@@ -581,7 +581,7 @@ const POSPage = () => {
                   <p className="text-gray-600">Phone: {companyInfo.phone}</p>
                   <p className="text-gray-600">Email: {companyInfo.email}</p>
                 </div>
-                
+
                 <div className="flex flex-col sm:flex-row justify-between mb-6 gap-4">
                   <div>
                     <p className="font-semibold">Invoice #: {invoiceNum}</p>
@@ -592,7 +592,7 @@ const POSPage = () => {
                     <p className="text-gray-600">Cashier: {userName}</p>
                   </div>
                 </div>
-                
+
                 <div className="overflow-x-auto">
                   <table className="w-full mb-6">
                     <thead>
@@ -620,7 +620,7 @@ const POSPage = () => {
                     </tbody>
                   </table>
                 </div>
-                
+
                 <div className="flex justify-end">
                   <div className="w-64 bg-gray-50 p-4 rounded-lg">
                     <div className="flex justify-between py-2">
@@ -637,14 +637,14 @@ const POSPage = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="text-center mt-8 text-gray-500">
                   <p>Thank you for your business!</p>
                 </div>
               </div>
-              
+
               <div className="mt-6 flex flex-col sm:flex-row justify-end gap-3">
-                <motion.button 
+                <motion.button
                   onClick={handlePrintBill}
                   className="flex items-center justify-center gap-2 bg-blue-800 hover:bg-blue-900 text-white px-4 py-3 rounded-lg font-medium transition-colors shadow-md"
                   whileHover={{ y: -2 }}
@@ -653,7 +653,7 @@ const POSPage = () => {
                   <Printer size={18} />
                   <span>Print Invoice</span>
                 </motion.button>
-                <motion.button 
+                <motion.button
                   onClick={handleNewOrder}
                   className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-4 py-3 rounded-lg font-medium transition-all shadow-md"
                   whileHover={{ y: -2 }}
@@ -696,7 +696,7 @@ const POSPage = () => {
                 </motion.button>
               </div>
             </div>
-            
+
             {/* Categories */}
             <div className="px-4 py-3 border-b border-gray-200 overflow-x-auto bg-blue-50">
               <div className="flex space-x-2">
@@ -704,11 +704,10 @@ const POSPage = () => {
                   <motion.button
                     key={category._id}
                     onClick={() => handleChangeCategory(category._id)}
-                    className={`flex items-center px-4 py-2 rounded-xl text-sm whitespace-nowrap transition-all ${
-                      selectedCategory === category._id
+                    className={`flex items-center px-4 py-2 rounded-xl text-sm whitespace-nowrap transition-all ${selectedCategory === category._id
                         ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md"
                         : "bg-white text-gray-700 hover:bg-blue-100 border border-blue-100"
-                    }`}
+                      }`}
                     whileHover={{ y: -1 }}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -718,7 +717,7 @@ const POSPage = () => {
                 ))}
               </div>
             </div>
-            
+
             {/* Products Grid */}
             <div className="flex-1 p-4 overflow-y-auto bg-blue-50">
               {filteredProducts.length === 0 ? (
@@ -733,27 +732,33 @@ const POSPage = () => {
                     <motion.div
                       key={product._id}
                       onClick={() => product.stock > 0 && handleOrderClick(product)}
-                      className={`border rounded-xl p-3 flex flex-col justify-between cursor-pointer transition-all bg-white shadow-sm hover:shadow-md ${
-                        product.stock > 0
+                      className={`border rounded-xl p-3 flex flex-col justify-between cursor-pointer transition-all bg-white shadow-sm hover:shadow-md ${product.stock > 0
                           ? "hover:border-blue-300"
                           : "opacity-70 cursor-not-allowed"
-                      }`}
+                        }`}
                       whileHover={{ y: -3 }}
                     >
                       <div>
-                        <div className="bg-blue-100 p-3 rounded-lg flex items-center justify-center mb-3">
-                          <Package size={24} className="text-blue-600" />
+                        <div className="bg-blue-100 p-3 rounded-lg flex items-center justify-center mb-3 h-24">
+                          {product.image ? (
+                            <img
+                              src={`http://localhost:5000/uploads/${product.image}`}
+                              alt={product.name}
+                              className="h-full object-contain"
+                            />
+                          ) : (
+                            <Package size={24} className="text-blue-600" />
+                          )}
                         </div>
                         <h3 className="font-medium text-gray-800 text-sm truncate">{product.name}</h3>
                         <div className="flex justify-between items-center mt-2">
                           <p className="text-blue-600 font-bold">₹{product.price.toFixed(2)}</p>
-                          <p className={`text-xs px-2 py-1 rounded-full ${
-                            product.stock > 10 
-                              ? "bg-green-100 text-green-800" 
-                              : product.stock > 0 
-                                ? "bg-yellow-100 text-yellow-800" 
+                          <p className={`text-xs px-2 py-1 rounded-full ${product.stock > 10
+                              ? "bg-green-100 text-green-800"
+                              : product.stock > 0
+                                ? "bg-yellow-100 text-yellow-800"
                                 : "bg-red-100 text-red-800"
-                          }`}>
+                            }`}>
                             Stock: {product.stock}
                           </p>
                         </div>
@@ -773,13 +778,13 @@ const POSPage = () => {
               )}
             </div>
           </div>
-          
+
           {/* Right side - Order */}
           <div className={`w-full md:w-4/12 bg-white border-l border-gray-200 flex flex-col shadow-lg ${showCart ? 'flex' : 'hidden md:flex'}`}>
             {/* Order Header */}
             <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-blue-700 to-blue-800 text-white flex items-center justify-between">
               <div className="flex items-center">
-                <button 
+                <button
                   onClick={() => setShowCart(false)}
                   className="md:hidden mr-3 text-blue-200 hover:text-white"
                 >
@@ -799,7 +804,7 @@ const POSPage = () => {
                 </button>
               )}
             </div>
-            
+
             {/* Order Items */}
             <div className="flex-1 overflow-y-auto p-4 bg-blue-50">
               {orderData.products.length === 0 ? (
@@ -813,8 +818,8 @@ const POSPage = () => {
                   {orderData.products.map((item, index) => {
                     const product = products.find((p) => p._id === item.productId);
                     return (
-                      <motion.div 
-                        key={index} 
+                      <motion.div
+                        key={index}
                         className="flex items-center bg-white p-3 rounded-lg shadow-sm border border-blue-100"
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -835,11 +840,10 @@ const POSPage = () => {
                           <motion.button
                             onClick={() => handleQuantityChange(item.productId, item.quantity + 1)}
                             disabled={item.quantity >= product?.stock}
-                            className={`w-7 h-7 flex items-center justify-center rounded-lg transition-colors ${
-                              item.quantity >= product?.stock
+                            className={`w-7 h-7 flex items-center justify-center rounded-lg transition-colors ${item.quantity >= product?.stock
                                 ? "bg-gray-100 text-gray-400"
                                 : "bg-blue-100 hover:bg-blue-200"
-                            }`}
+                              }`}
                             whileTap={{ scale: 0.9 }}
                           >
                             <Plus size={14} />
@@ -862,7 +866,7 @@ const POSPage = () => {
                 </div>
               )}
             </div>
-            
+
             {/* Order Summary */}
             <div className="p-4 bg-white border-t border-gray-200">
               <div className="space-y-2 mb-4">
@@ -879,7 +883,7 @@ const POSPage = () => {
                   <span className="text-blue-600">₹{calculateGrandTotal()}</span>
                 </div>
               </div>
-              
+
               {/* Place Order Button */}
               <motion.button
                 onClick={handleOrderSubmit}
