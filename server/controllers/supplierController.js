@@ -1,101 +1,153 @@
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url"; // Import fileURLToPath
 import Supplier from "../models/Supplier.js";
 import Product from "../models/Product.js";
 
-// Route to add a new employee
+// Get the current directory name in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Route to add a new Chef (Supplier)
 const addSupplier = async (req, res) => {
   try {
-    const { name, email, phone, address } = req.body;
+    const {
+      name,
+      specialization,
+      experienceYears,
+      availability,
+      notes,
+    } = req.body;
 
-    // Check if user already exists with the same email
-    let existingSupplier = await Supplier.findOne({ email });
-    if (existingSupplier) {
-      return res
-        .status(400)
-        .json({ success: false, error: "Supplier already exists" });
-    }
+    const profilePicture = req.file ? req.file.filename : null;
 
-    // Hash the password before storing the user
-    // const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create new user
     const newSupplier = new Supplier({
       name,
-      email,
-      phone,
-      address,
+      specialization,
+      experienceYears,
+      availability: availability ? JSON.parse(availability) : [],
+      notes,
+      profilePicture: profilePicture || undefined
     });
+
     const supplier = await newSupplier.save();
 
-    res
-      .status(201)
-      .json({ success: true, message: "Supplier created successfully" });
+    res.status(201).json({
+      success: true,
+      message: "Chef created successfully",
+      supplier,
+    });
   } catch (error) {
-    console.error(error.message);
+    console.error("Add Supplier Error:", error.message);
     res.status(500).json({ success: false, error: "Server error" });
   }
 };
 
+// Get all Chefs
 const getSuppliers = async (req, res) => {
   try {
     const suppliers = await Supplier.find();
-    res.status(201).json({ success: true, suppliers });
+    res.status(200).json({ success: true, suppliers });
   } catch (error) {
-    res
-      .status(500)
-      .json({ success: false, error: "Server error " + error.message });
+    res.status(500).json({ success: false, error: "Server error " + error.message });
   }
 };
 
+// Update Chef details
 const updateSupplier = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, email, phone, address } = req.body;
+    const {
+      name,
+      specialization,
+      experienceYears,
+      availability,
+      notes,
+    } = req.body;
 
-    const supplier = await Supplier.findById({ _id: id });
-    if (!supplier) {
-      res.status(404).json({ success: false, error: "Supplier Not Found" });
+    const profilePicture = req.file ? req.file.filename : null;
+
+    const updatedFields = {
+      name,
+      specialization,
+      experienceYears,
+      notes,
+    };
+
+    if (availability) {
+      updatedFields.availability = JSON.parse(availability);
     }
 
-    const updateUser = await Supplier.findByIdAndUpdate(
-      { _id: id },
-      { name, email, phone, address }
-    );
+    const supplier = await Supplier.findById(id);
+    if (!supplier) {
+      return res.status(404).json({ success: false, error: "Supplier not found" });
+    }
 
-    res.status(201).json({ success: true, updateUser });
+    // If a new profile picture is uploaded, delete the old one
+    if (profilePicture) {
+      updatedFields.profilePicture = profilePicture;
+
+      // Delete old image if it exists
+      if (supplier.profilePicture) {
+        const oldImagePath = path.join(__dirname, "../uploads", supplier.profilePicture);
+        fs.unlink(oldImagePath, (err) => {
+          if (err) {
+            console.error("Error deleting old image:", err);
+            return res.status(500).json({ success: false, error: "Error deleting old image" });
+          }
+        });
+      }
+    }
+
+    // If removeImage is true, delete the current image and set profilePicture to null
+    if (req.body.removeImage === "true") {
+      if (supplier.profilePicture) {
+        const oldImagePath = path.join(__dirname, "../uploads", supplier.profilePicture);
+        fs.unlink(oldImagePath, (err) => {
+          if (err) {
+            console.error("Error deleting removed image:", err);
+            return res.status(500).json({ success: false, error: "Error deleting removed image" });
+          }
+        });
+      }
+      updatedFields.profilePicture = null;
+    }
+
+    const updatedSupplier = await Supplier.findByIdAndUpdate(id, updatedFields, { new: true });
+
+    if (!updatedSupplier) {
+      return res.status(404).json({ success: false, error: "Chef not found" });
+    }
+
+    res.status(200).json({ success: true, updatedSupplier });
   } catch (error) {
-    console.error("Error editing employee:", error);
-    res
-      .status(500)
-      .json({ success: false, error: "Server error " + error.message });
+    console.error("Update Supplier Error:", error.message);
+    res.status(500).json({ success: false, error: "Server error: " + error.message });
   }
 };
 
+// Delete Chef
 const deleteSupplier = async (req, res) => {
   try {
     const { id } = req.params;
 
     const productCount = await Product.countDocuments({ supplier: id });
     if (productCount > 0) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          error: "Cannot delete supplier with associated products",
-        });
+      return res.status(400).json({
+        success: false,
+        error: "Cannot delete chef with associated products",
+      });
     }
 
-    const supplier = await Supplier.findByIdAndDelete({ _id: id });
+    const supplier = await Supplier.findByIdAndDelete(id);
     if (!supplier) {
-      res
-        .status(404)
-        .json({ success: false, error: "document not found " + error.message });
+      return res.status(404).json({ success: false, error: "Chef not found" });
     }
-    res.status(201).json({ success: true, supplier });
+
+    res.status(200).json({ success: true, supplier });
   } catch (error) {
-    console.error("Error editing employee:", error);
-    res
-      .status(500)
-      .json({ success: false, error: "Server error " + error.message });
+    console.error("Delete Supplier Error:", error.message);
+    res.status(500).json({ success: false, error: "Server error" });
   }
 };
 

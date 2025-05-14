@@ -14,6 +14,10 @@ import Logout from "./components/Logout";
 import EmployeeProducts from "./components/EmployeeProducts";
 import Orders from "./components/Orders";
 import Profile from "./components/Profile";
+import Inventory from "./components/Inventory";
+import InventorySupplier from "./components/InventorySupplier";
+import Staff from "./components/Staff";
+import Expense from "./components/Expense";
 
 const App = () => (
   <AuthProvider>
@@ -69,6 +73,38 @@ const App = () => (
             element={
               <ProtectedRoute requiredRole={["admin"]}>
                 <Orders />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="Inventory"
+            element={
+              <ProtectedRoute requiredRole={["admin"]}>
+                <Inventory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="InventorySupplier"
+            element={
+              <ProtectedRoute requiredRole={["admin"]}>
+                <InventorySupplier />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="Staff"
+            element={
+              <ProtectedRoute requiredRole={["admin"]}>
+                <Staff />
+              </ProtectedRoute>
+            }
+          />
+           <Route
+            path="Expense"
+            element={
+              <ProtectedRoute requiredRole={["admin"]}>
+                <Expense />
               </ProtectedRoute>
             }
           />

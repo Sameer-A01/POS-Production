@@ -269,19 +269,26 @@ const Products = () => {
           <p className="font-medium">₹{product.price.toLocaleString('en-IN')}</p>
         </div>
         <div>
-          <span className="text-gray-500">Stock:</span>
-          <span
-            className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
-              product.stock === 0
-                ? "bg-red-100 text-red-800"
-                : product.stock <= 5
-                ? "bg-yellow-100 text-yellow-800"
-                : "bg-green-100 text-green-800"
-            }`}
-          >
-            {product.stock} in stock
-          </span>
-        </div>
+  <span className="text-gray-500">Stock:</span>
+  <div className="flex items-center gap-1">
+    <span
+      className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
+        product.stock === 0
+          ? "bg-red-100 text-red-800"
+          : product.stock <= 5
+          ? "bg-yellow-100 text-yellow-800"
+          : "bg-green-100 text-green-800"
+      }`}
+    >
+      {product.stock} in stock
+    </span>
+    <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+      product.stock > 0 ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-800"
+    }`}>
+      {product.stock > 0 ? "Available" : "Unavailable"}
+    </span>
+  </div>
+</div>
       </div>
     </div>
   );
@@ -321,7 +328,7 @@ const Products = () => {
                 clipRule="evenodd"
               />
             </svg>
-            Add Product
+            Add Menu
           </button>
         </div>
 
@@ -382,7 +389,7 @@ const Products = () => {
                     Category
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Supplier
+                    Chef
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Price
@@ -434,18 +441,25 @@ const Products = () => {
                         ₹{product.price.toLocaleString('en-IN')}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            product.stock === 0
-                              ? "bg-red-100 text-red-800"
-                              : product.stock <= 5
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-green-100 text-green-800"
-                          }`}
-                        >
-                          {product.stock} in stock
-                        </span>
-                      </td>
+  <div className="flex items-center gap-2">
+    <span
+      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+        product.stock === 0
+          ? "bg-red-100 text-red-800"
+          : product.stock <= 5
+          ? "bg-yellow-100 text-yellow-800"
+          : "bg-green-100 text-green-800"
+      }`}
+    >
+      {product.stock} in stock
+    </span>
+    <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+      product.stock > 0 ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-800"
+    }`}>
+      {product.stock > 0 ? "Available" : "Unavailable"}
+    </span>
+  </div>
+</td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button
                           onClick={() => handleEdit(product)}
@@ -633,7 +647,7 @@ const Products = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Supplier *
+                        Chef *
                       </label>
                       <select
                         name="supplier"
@@ -642,7 +656,7 @@ const Products = () => {
                         required
                         className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                       >
-                        <option value="">Select a supplier</option>
+                        <option value="">Select a Chef</option>
                         {suppliers.map((sup) => (
                           <option key={sup._id} value={sup._id}>
                             {sup.name}
