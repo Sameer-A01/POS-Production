@@ -14,6 +14,9 @@ import userRouter from "./routes/user.js";
 import orderRouter from "./routes/order.js";
 import dashboardRouter from "./routes/dashboard.js";
 import supplyRoutes from './routes/supplyRoutes.js';
+import staffRoutes from "./routes/staffRoutes.js"; // ✅ Import staff routes
+
+
 
 // DB connection
 import connectToMongoDB from "./db/connectToMongoDB.js";
@@ -43,6 +46,7 @@ app.use("/api/products", productRouter);
 app.use("/api/users", userRouter);
 app.use("/api/order", orderRouter);
 app.use('/api/supply', supplyRoutes);
+app.use("/api/staff", staffRoutes);
 
 // Start server
 app.listen(process.env.PORT, () => {
