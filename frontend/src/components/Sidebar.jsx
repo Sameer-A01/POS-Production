@@ -42,7 +42,7 @@ const Sidebar = () => {
     { name: 'My Orders', path: '/employee-dashboard/orders', icon: <FaShoppingCart />, isParent: false },
     { name: 'Products', path: '/admin-dashboard/products', icon: <FaBox />, isParent: false },
     { name: 'Categories', path: '/admin-dashboard/categories', icon: <FaTable />, isParent: false },
-    { name: 'Suppliers', path: '/admin-dashboard/supplier', icon: <FaTruck />, isParent: false },
+    { name: 'Chef', path: '/admin-dashboard/supplier', icon: <FaUserTie />, isParent: false },
     { name: 'Logout', path: '/logout', icon: <FaSignOutAlt />, isParent: true },
   ];
 
@@ -58,7 +58,7 @@ const Sidebar = () => {
   return (
     <div className="fixed h-screen bg-gray-800 text-white w-16 md:w-64 flex flex-col">
       <div className="h-16 flex items-center justify-center md:justify-start md:pl-6">
-        <span className="hidden md:block text-xl font-bold">Inventory MS</span>
+        <span className="hidden md:block text-xl font-bold">Restaurant MS</span>
         <span className="block md:hidden text-xl font-bold">IMS</span>
       </div>
 
