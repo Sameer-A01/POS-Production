@@ -20,6 +20,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  DialogContentText,
   Chip,
   Grid,
   Divider,
@@ -55,11 +56,23 @@ const departments = ["Kitchen", "Service", "Billing", "Cleaning", "Reception", "
 const statuses = ["Active", "On Leave", "Terminated"];
 const genders = ["Male", "Female", "Other"];
 
+// Color palette for days
+const dayColors = {
+  Monday: { bg: "#e0f2fe", text: "#0284c7" },
+  Tuesday: { bg: "#fefce8", text: "#ca8a04" },
+  Wednesday: { bg: "#f3e8ff", text: "#9333ea" },
+  Thursday: { bg: "#ecfccb", text: "#65a30d" },
+  Friday: { bg: "#ffe4e6", text: "#e11d48" },
+  Saturday: { bg: "#e6f3ff", text: "#1d4ed8" },
+  Sunday: { bg: "#ffedd5", text: "#ea580c" },
+};
+
 const Staff = () => {
   const [staffList, setStaffList] = useState([]);
   const [form, setForm] = useState(initialForm);
   const [editingId, setEditingId] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
+  const [deleteDialog, setDeleteDialog] = useState({ open: false, id: null });
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState("all");
   const [dayToggles, setDayToggles] = useState(
@@ -165,16 +178,24 @@ const Staff = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this staff member?")) return;
     try {
       setLoading(true);
       await axiosInstance.delete(`/staff/${id}`);
       fetchStaff();
+      setDeleteDialog({ open: false, id: null });
     } catch (error) {
       alert("Error deleting staff: " + (error.response?.data?.message || error.message));
     } finally {
       setLoading(false);
     }
+  };
+
+  const openDeleteDialog = (id) => {
+    setDeleteDialog({ open: true, id });
+  };
+
+  const closeDeleteDialog = () => {
+    setDeleteDialog({ open: false, id: null });
   };
 
   const handleAddNew = () => {
@@ -211,7 +232,7 @@ const Staff = () => {
       <Box
         sx={{
           p: { xs: 3, md: 6 },
-          bgcolor: "linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%)",
+          bgcolor: "linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%)",
           minHeight: "100vh",
           transition: "all 0.3s ease",
         }}
@@ -231,7 +252,7 @@ const Staff = () => {
             component="h1"
             sx={{
               fontWeight: "bold",
-              color: "grey.900",
+              color: "#1e3a8a",
               fontSize: { xs: "2rem", md: "3rem" },
             }}
           >
@@ -242,8 +263,8 @@ const Staff = () => {
             startIcon={<PersonAdd />}
             onClick={handleAddNew}
             sx={{
-              bgcolor: "indigo.600",
-              "&:hover": { bgcolor: "indigo.700" },
+              bgcolor: "#4f46e5",
+              "&:hover": { bgcolor: "#4338ca" },
               borderRadius: 2,
               px: 4,
               py: 1.5,
@@ -266,7 +287,7 @@ const Staff = () => {
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 3, flexWrap: "wrap" }}>
-            <Typography variant="h6" sx={{ fontWeight: "medium", color: "grey.800" }}>
+            <Typography variant="h6" sx={{ fontWeight: "medium", color: "#1f2937" }}>
               Filter by Status:
             </Typography>
             <Chip
@@ -274,11 +295,11 @@ const Staff = () => {
               variant={filter === "all" ? "filled" : "outlined"}
               onClick={() => setFilter("all")}
               sx={{
-                bgcolor: filter === "all" ? "indigo.600" : "grey.100",
-                color: filter === "all" ? "white" : "grey.800",
+                bgcolor: filter === "all" ? "#4f46e5" : "#f3f4f6",
+                color: filter === "all" ? "white" : "#1f2937",
                 fontWeight: "medium",
                 borderRadius: 2,
-                "&:hover": { bgcolor: filter === "all" ? "indigo.700" : "grey.200" },
+                "&:hover": { bgcolor: filter === "all" ? "#4338ca" : "#e5e7eb" },
               }}
             />
             {statuses.map((status) => (
@@ -289,11 +310,11 @@ const Staff = () => {
                 onClick={() => setFilter(status)}
                 color={getStatusColor(status)}
                 sx={{
-                  bgcolor: filter === status ? undefined : "grey.100",
-                  color: filter === status ? "white" : "grey.800",
+                  bgcolor: filter === status ? undefined : "#f3f4f6",
+                  color: filter === status ? "white" : "#1f2937",
                   fontWeight: "medium",
                   borderRadius: 2,
-                  "&:hover": { bgcolor: filter === status ? undefined : "grey.200" },
+                  "&:hover": { bgcolor: filter === status ? undefined : "#e5e7eb" },
                 }}
               />
             ))}
@@ -311,26 +332,26 @@ const Staff = () => {
         >
           <Table>
             <TableHead>
-              <TableRow sx={{ bgcolor: "grey.200" }}>
-                <TableCell sx={{ fontWeight: "bold", color: "grey.900", py: 3 }}>Staff</TableCell>
-                <TableCell sx={{ fontWeight: "bold", color: "grey.900", py: 3 }}>Details</TableCell>
-                <TableCell sx={{ fontWeight: "bold", color: "grey.900", py: 3 }}>Schedule</TableCell>
-                <TableCell sx={{ fontWeight: "bold", color: "grey.900", py: 3 }}>Status</TableCell>
-                <TableCell sx={{ fontWeight: "bold", color: "grey.900", py: 3 }}>Salary</TableCell>
-                <TableCell sx={{ fontWeight: "bold", color: "grey.900", py: 3 }}>Actions</TableCell>
+              <TableRow sx={{ bgcolor: "#e0e7ff" }}>
+                <TableCell sx={{ fontWeight: "bold", color: "#1e3a8a", py: 3 }}>Staff</TableCell>
+                <TableCell sx={{ fontWeight: "bold", color: "#1e3a8a", py: 3 }}>Details</TableCell>
+                <TableCell sx={{ fontWeight: "bold", color: "#1e3a8a", py: 3 }}>Schedule</TableCell>
+                <TableCell sx={{ fontWeight: "bold", color: "#1e3a8a", py: 3 }}>Status</TableCell>
+                <TableCell sx={{ fontWeight: "bold", color: "#1e3a8a", py: 3 }}>Salary</TableCell>
+                <TableCell sx={{ fontWeight: "bold", color: "#1e3a8a", py: 3 }}>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {loading && (
                 <TableRow>
-                  <TableCell colSpan={6} align="center" sx={{ py: 4, color: "grey.600" }}>
+                  <TableCell colSpan={6} align="center" sx={{ py: 4, color: "#6b7280" }}>
                     Loading...
                   </TableCell>
                 </TableRow>
               )}
               {!loading && filteredStaff.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} align="center" sx={{ py: 4, color: "grey.600" }}>
+                  <TableCell colSpan={6} align="center" sx={{ py: 4, color: "#6b7280" }}>
                     No staff found
                   </TableCell>
                 </TableRow>
@@ -340,8 +361,8 @@ const Staff = () => {
                   <TableRow
                     key={staff._id}
                     sx={{
-                      bgcolor: index % 2 === 0 ? "white" : "grey.50",
-                      "&:hover": { bgcolor: "indigo.50", transition: "background 0.2s ease" },
+                      bgcolor: index % 2 === 0 ? "white" : "#f9fafb",
+                      "&:hover": { bgcolor: "#e0e7ff", transition: "background 0.2s ease" },
                     }}
                   >
                     <TableCell sx={{ py: 3 }}>
@@ -355,16 +376,15 @@ const Staff = () => {
                               height: 48,
                               borderRadius: "50%",
                               objectFit: "cover",
-                              border: "2px solid",
-                              borderColor: "indigo.200",
+                              border: "2px solid #4f46e5",
                             }}
                           />
                         )}
                         <Box>
-                          <Typography sx={{ fontWeight: "medium", color: "grey.900" }}>
+                          <Typography sx={{ fontWeight: "medium", color: "#1f2937" }}>
                             {staff.name}
                           </Typography>
-                          <Typography variant="body2" sx={{ color: "grey.600" }}>
+                          <Typography variant="body2" sx={{ color: "#6b7280" }}>
                             {staff.email}
                           </Typography>
                         </Box>
@@ -375,24 +395,24 @@ const Staff = () => {
                         <Chip
                           label={staff.role}
                           size="small"
-                          sx={{ bgcolor: "indigo.100", color: "indigo.800", fontWeight: "medium" }}
+                          sx={{ bgcolor: "#dbeafe", color: "#1e40af", fontWeight: "medium" }}
                         />
                         <Chip
                           label={staff.department}
                           size="small"
-                          sx={{ bgcolor: "teal.100", color: "teal.800", fontWeight: "medium" }}
+                          sx={{ bgcolor: "#d1fae5", color: "#065f46", fontWeight: "medium" }}
                         />
                         {staff.gender && (
                           <Chip
                             label={staff.gender}
                             size="small"
-                            sx={{ bgcolor: "purple.100", color: "purple.800", fontWeight: "medium" }}
+                            sx={{ bgcolor: "#f3e8ff", color: "#6b21a8", fontWeight: "medium" }}
                           />
                         )}
-                        <Typography variant="body2" sx={{ color: "grey.600" }}>
+                        <Typography variant="body2" sx={{ color: "#6b7280" }}>
                           {staff.phone}
                         </Typography>
-                        <Typography variant="body2" sx={{ color: "grey.600" }}>
+                        <Typography variant="body2" sx={{ color: "#6b7280" }}>
                           Joined: {staff.joiningDate ? new Date(staff.joiningDate).toLocaleDateString() : "-"}
                         </Typography>
                       </Box>
@@ -404,7 +424,11 @@ const Staff = () => {
                             key={schedule.day}
                             label={`${schedule.day}: ${schedule.timeSlots[0].start}-${schedule.timeSlots[0].end}`}
                             size="small"
-                            sx={{ bgcolor: "blue.100", color: "blue.800", fontWeight: "medium" }}
+                            sx={{
+                              bgcolor: dayColors[schedule.day].bg,
+                              color: dayColors[schedule.day].text,
+                              fontWeight: "medium",
+                            }}
                           />
                         ))}
                       </Box>
@@ -419,8 +443,8 @@ const Staff = () => {
                     </TableCell>
                     <TableCell sx={{ py: 3 }}>
                       <Box>
-                        <Typography sx={{ color: "grey.900" }}>₹{staff.salary.toLocaleString()}</Typography>
-                        <Typography variant="body2" sx={{ color: "grey.600" }}>
+                        <Typography sx={{ color: "#1f2937" }}>₹{staff.salary.toLocaleString()}</Typography>
+                        <Typography variant="body2" sx={{ color: "#6b7280" }}>
                           Due: {staff.salaryDueDate ? new Date(staff.salaryDueDate).toLocaleDateString() : "-"}
                         </Typography>
                       </Box>
@@ -429,15 +453,15 @@ const Staff = () => {
                       <Tooltip title="Edit">
                         <IconButton
                           onClick={() => handleEdit(staff)}
-                          sx={{ color: "indigo.600", "&:hover": { color: "indigo.800" } }}
+                          sx={{ color: "#4f46e5", "&:hover": { color: "#4338ca" } }}
                         >
                           <Edit />
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="Delete">
                         <IconButton
-                          onClick={() => handleDelete(staff._id)}
-                          sx={{ color: "red.600", "&:hover": { color: "red.800" } }}
+                          onClick={() => openDeleteDialog(staff._id)}
+                          sx={{ color: "#dc2626", "&:hover": { color: "#b91c1c" } }}
                         >
                           <Delete />
                         </IconButton>
@@ -454,14 +478,20 @@ const Staff = () => {
           onClose={handleCloseDialog}
           fullWidth
           maxWidth="lg"
-          sx={{ "& .MuiDialog-paper": { borderRadius: 3, boxShadow: "0 8px 40px rgba(0, 0, 0, 0.2)" } }}
+          sx={{
+            "& .MuiDialog-paper": {
+              borderRadius: 3,
+              boxShadow: "0 8px 40px rgba(0, 0, 0, 0.2)",
+              background: "linear-gradient(135deg, #ffffff 0%, #f9fafb 100%)",
+            },
+          }}
         >
-          <DialogTitle sx={{ bgcolor: "indigo.50", color: "indigo.900", fontWeight: "bold", py: 3 }}>
+          <DialogTitle sx={{ bgcolor: "#e0e7ff", color: "#1e3a8a", fontWeight: "bold", py: 3 }}>
             {editingId ? "Edit Staff Member" : "Add New Staff Member"}
           </DialogTitle>
-          <DialogContent dividers sx={{ bgcolor: "grey.50", py: 4 }}>
+          <DialogContent dividers sx={{ bgcolor: "#f9fafb", py: 4 }}>
             <form onSubmit={handleSubmit}>
-              <Typography variant="h6" sx={{ mb: 3, color: "grey.800", fontWeight: "medium" }}>
+              <Typography variant="h6" sx={{ mb: 3, color: "#1f2937", fontWeight: "medium" }}>
                 Personal Information
               </Typography>
               <Grid container spacing={3}>
@@ -477,7 +507,11 @@ const Staff = () => {
                     sx={{
                       bgcolor: "white",
                       borderRadius: 2,
-                      "& .MuiOutlinedInput-root": { borderRadius: 2 },
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: 2,
+                        "& fieldset": { borderColor: "#4f46e5" },
+                        "&:hover fieldset": { borderColor: "#4338ca" },
+                      },
                     }}
                   />
                 </Grid>
@@ -494,7 +528,11 @@ const Staff = () => {
                     sx={{
                       bgcolor: "white",
                       borderRadius: 2,
-                      "& .MuiOutlinedInput-root": { borderRadius: 2 },
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: 2,
+                        "& fieldset": { borderColor: "#4f46e5" },
+                        "&:hover fieldset": { borderColor: "#4338ca" },
+                      },
                     }}
                   />
                 </Grid>
@@ -509,7 +547,11 @@ const Staff = () => {
                     sx={{
                       bgcolor: "white",
                       borderRadius: 2,
-                      "& .MuiOutlinedInput-root": { borderRadius: 2 },
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: 2,
+                        "& fieldset": { borderColor: "#10b981" },
+                        "&:hover fieldset": { borderColor: "#059669" },
+                      },
                     }}
                   />
                 </Grid>
@@ -520,10 +562,14 @@ const Staff = () => {
                     sx={{
                       bgcolor: "white",
                       borderRadius: 2,
-                      "& .MuiOutlinedInput-root": { borderRadius: 2 },
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: 2,
+                        "& fieldset": { borderColor: "#10b981" },
+                        "&:hover fieldset": { borderColor: "#059669" },
+                      },
                     }}
                   >
-                    <InputLabel>Gender</InputLabel>
+                    <InputLabel sx={{ color: "#1f2937" }}>Gender</InputLabel>
                     <Select name="gender" value={form.gender} onChange={handleChange} label="Gender">
                       {genders.map((gender) => (
                         <MenuItem key={gender} value={gender}>
@@ -546,7 +592,11 @@ const Staff = () => {
                     sx={{
                       bgcolor: "white",
                       borderRadius: 2,
-                      "& .MuiOutlinedInput-root": { borderRadius: 2 },
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: 2,
+                        "& fieldset": { borderColor: "#8b5cf6" },
+                        "&:hover fieldset": { borderColor: "#7c3aed" },
+                      },
                     }}
                   />
                 </Grid>
@@ -561,14 +611,18 @@ const Staff = () => {
                     sx={{
                       bgcolor: "white",
                       borderRadius: 2,
-                      "& .MuiOutlinedInput-root": { borderRadius: 2 },
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: 2,
+                        "& fieldset": { borderColor: "#8b5cf6" },
+                        "&:hover fieldset": { borderColor: "#7c3aed" },
+                      },
                     }}
                   />
                 </Grid>
               </Grid>
 
-              <Divider sx={{ my: 6 }} />
-              <Typography variant="h6" sx={{ mb: 3, color: "grey.800", fontWeight: "medium" }}>
+              <Divider sx={{ my: 6, borderColor: "#e5e7eb" }} />
+              <Typography variant="h6" sx={{ mb: 3, color: "#1f2937", fontWeight: "medium" }}>
                 Employment Details
               </Typography>
               <Grid container spacing={3}>
@@ -580,10 +634,14 @@ const Staff = () => {
                     sx={{
                       bgcolor: "white",
                       borderRadius: 2,
-                      "& .MuiOutlinedInput-root": { borderRadius: 2 },
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: 2,
+                        "& fieldset": { borderColor: "#4f46e5" },
+                        "&:hover fieldset": { borderColor: "#4338ca" },
+                      },
                     }}
                   >
-                    <InputLabel>Role</InputLabel>
+                    <InputLabel sx={{ color: "#1f2937" }}>Role</InputLabel>
                     <Select name="role" value={form.role} onChange={handleChange} label="Role">
                       {roles.map((role) => (
                         <MenuItem key={role} value={role}>
@@ -601,10 +659,14 @@ const Staff = () => {
                     sx={{
                       bgcolor: "white",
                       borderRadius: 2,
-                      "& .MuiOutlinedInput-root": { borderRadius: 2 },
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: 2,
+                        "& fieldset": { borderColor: "#4f46e5" },
+                        "&:hover fieldset": { borderColor: "#4338ca" },
+                      },
                     }}
                   >
-                    <InputLabel>Department</InputLabel>
+                    <InputLabel sx={{ color: "#1f2937" }}>Department</InputLabel>
                     <Select name="department" value={form.department} onChange={handleChange} label="Department">
                       {departments.map((dept) => (
                         <MenuItem key={dept} value={dept}>
@@ -622,10 +684,14 @@ const Staff = () => {
                     sx={{
                       bgcolor: "white",
                       borderRadius: 2,
-                      "& .MuiOutlinedInput-root": { borderRadius: 2 },
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: 2,
+                        "& fieldset": { borderColor: "#10b981" },
+                        "&:hover fieldset": { borderColor: "#059669" },
+                      },
                     }}
                   >
-                    <InputLabel>Status</InputLabel>
+                    <InputLabel sx={{ color: "#1f2937" }}>Status</InputLabel>
                     <Select name="status" value={form.status} onChange={handleChange} label="Status">
                       {statuses.map((status) => (
                         <MenuItem key={status} value={status}>
@@ -648,10 +714,14 @@ const Staff = () => {
                     sx={{
                       bgcolor: "white",
                       borderRadius: 2,
-                      "& .MuiOutlinedInput-root": { borderRadius: 2 },
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: 2,
+                        "& fieldset": { borderColor: "#10b981" },
+                        "&:hover fieldset": { borderColor: "#059669" },
+                      },
                     }}
                     InputProps={{
-                      startAdornment: <Typography sx={{ mr: 2, color: "grey.600" }}>₹</Typography>,
+                      startAdornment: <Typography sx={{ mr: 2, color: "#6b7280" }}>₹</Typography>,
                     }}
                   />
                 </Grid>
@@ -668,7 +738,11 @@ const Staff = () => {
                         sx={{
                           bgcolor: "white",
                           borderRadius: 2,
-                          "& .MuiOutlinedInput-root": { borderRadius: 2 },
+                          "& .MuiOutlinedInput-root": {
+                            borderRadius: 2,
+                            "& fieldset": { borderColor: "#8b5cf6" },
+                            "&:hover fieldset": { borderColor: "#7c3aed" },
+                          },
                         }}
                         {...params}
                       />
@@ -688,7 +762,11 @@ const Staff = () => {
                         sx={{
                           bgcolor: "white",
                           borderRadius: 2,
-                          "& .MuiOutlinedInput-root": { borderRadius: 2 },
+                          "& .MuiOutlinedInput-root": {
+                            borderRadius: 2,
+                            "& fieldset": { borderColor: "#8b5cf6" },
+                            "&:hover fieldset": { borderColor: "#7c3aed" },
+                          },
                         }}
                         {...params}
                       />
@@ -697,12 +775,12 @@ const Staff = () => {
                 </Grid>
               </Grid>
 
-              <Divider sx={{ my: 6 }} />
+              <Divider sx={{ my: 6, borderColor: "#e5e7eb" }} />
               <Typography
                 variant="h6"
-                sx={{ display: "flex", alignItems: "center", gap: 2, mb: 4, color: "grey.800", fontWeight: "medium" }}
+                sx={{ display: "flex", alignItems: "center", gap: 2, mb: 4, color: "#1f2937", fontWeight: "medium" }}
               >
-                <Schedule sx={{ color: "indigo.600" }} />
+                <Schedule sx={{ color: "#4f46e5" }} />
                 Shift Schedule
               </Typography>
               <Grid container spacing={4}>
@@ -718,20 +796,25 @@ const Staff = () => {
                           p: 4,
                           borderRadius: 3,
                           boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
-                          bgcolor: "white",
-                          transition: "all 0.3s ease",
-                          "&:hover": { boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)" },
+                          bgcolor: dayColors[day].bg,
+                          transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                          "&:hover": {
+                            transform: "translateY(-4px)",
+                            boxShadow: "0 8px 24px rgba(0, 0, 0, 0.15)",
+                          },
                         }}
                       >
                         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3 }}>
-                          <Typography variant="subtitle1" sx={{ fontWeight: "medium", color: "grey.900" }}>
+                          <Typography variant="subtitle1" sx={{ fontWeight: "medium", color: dayColors[day].text }}>
                             {day}
                           </Typography>
                           <Switch
                             checked={dayToggles[day]}
                             onChange={() => handleDayToggle(day)}
-                            color="primary"
-                            sx={{ "& .MuiSwitch-track": { bgcolor: "indigo.200" } }}
+                            sx={{
+                              "& .MuiSwitch-track": { bgcolor: `${dayColors[day].text}80` },
+                              "& .MuiSwitch-thumb": { bgcolor: dayColors[day].text },
+                            }}
                           />
                         </Box>
                         {dayToggles[day] && (
@@ -747,10 +830,14 @@ const Staff = () => {
                               sx={{
                                 bgcolor: "white",
                                 borderRadius: 2,
-                                "& .MuiOutlinedInput-root": { borderRadius: 2 },
+                                "& .MuiOutlinedInput-root": {
+                                  borderRadius: 2,
+                                  "& fieldset": { borderColor: dayColors[day].text },
+                                  "&:hover fieldset": { borderColor: `${dayColors[day].text}cc` },
+                                },
                               }}
                             />
-                            <Typography sx={{ color: "grey.600" }}>to</Typography>
+                            <Typography sx={{ color: "#6b7280" }}>to</Typography>
                             <TextField
                               type="time"
                               label="End"
@@ -762,7 +849,11 @@ const Staff = () => {
                               sx={{
                                 bgcolor: "white",
                                 borderRadius: 2,
-                                "& .MuiOutlinedInput-root": { borderRadius: 2 },
+                                "& .MuiOutlinedInput-root": {
+                                  borderRadius: 2,
+                                  "& fieldset": { borderColor: dayColors[day].text },
+                                  "&:hover fieldset": { borderColor: `${dayColors[day].text}cc` },
+                                },
                               }}
                             />
                           </Box>
@@ -773,8 +864,8 @@ const Staff = () => {
                 })}
               </Grid>
 
-              <Divider sx={{ my: 6 }} />
-              <Typography variant="h6" sx={{ mb: 3, color: "grey.800", fontWeight: "medium" }}>
+              <Divider sx={{ my: 6, borderColor: "#e5e7eb" }} />
+              <Typography variant="h6" sx={{ mb: 3, color: "#1f2937", fontWeight: "medium" }}>
                 Additional Information
               </Typography>
               <Grid container spacing={3}>
@@ -791,20 +882,24 @@ const Staff = () => {
                     sx={{
                       bgcolor: "white",
                       borderRadius: 2,
-                      "& .MuiOutlinedInput-root": { borderRadius: 2 },
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: 2,
+                        "& fieldset": { borderColor: "#4f46e5" },
+                        "&:hover fieldset": { borderColor: "#4338ca" },
+                      },
                     }}
                   />
                 </Grid>
               </Grid>
             </form>
           </DialogContent>
-          <DialogActions sx={{ bgcolor: "indigo.50", py: 3 }}>
+          <DialogActions sx={{ bgcolor: "#e0e7ff", py: 3 }}>
             <Button
               onClick={handleCloseDialog}
               startIcon={<Cancel />}
               sx={{
-                color: "grey.700",
-                "&:hover": { bgcolor: "grey.200" },
+                color: "#6b7280",
+                "&:hover": { bgcolor: "#e5e7eb" },
                 borderRadius: 2,
               }}
             >
@@ -816,8 +911,8 @@ const Staff = () => {
               startIcon={<Save />}
               disabled={loading}
               sx={{
-                bgcolor: "indigo.600",
-                "&:hover": { bgcolor: "indigo.700" },
+                bgcolor: "#4f46e5",
+                "&:hover": { bgcolor: "#4338ca" },
                 borderRadius: 2,
                 px: 4,
                 py: 1.5,
@@ -826,6 +921,59 @@ const Staff = () => {
               }}
             >
               {editingId ? "Update" : "Save"}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Dialog
+          open={deleteDialog.open}
+          onClose={closeDeleteDialog}
+          sx={{
+            "& .MuiDialog-paper": {
+              borderRadius: 3,
+              boxShadow: "0 8px 40px rgba(0, 0, 0, 0.2)",
+              background: "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)",
+              transition: "all 0.3s ease",
+            },
+            "& .MuiBackdrop-root": {
+              background: "rgba(0, 0, 0, 0.6)",
+              backdropFilter: "blur(4px)",
+            },
+          }}
+        >
+          <DialogTitle sx={{ color: "#b91c1c", fontWeight: "bold", py: 3 }}>
+            Confirm Deletion
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText sx={{ color: "#1f2937", mb: 2 }}>
+              Are you sure you want to delete this staff member? This action cannot be undone.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions sx={{ py: 3 }}>
+            <Button
+              onClick={closeDeleteDialog}
+              sx={{
+                color: "#6b7280",
+                "&:hover": { bgcolor: "#e5e7eb" },
+                borderRadius: 2,
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => handleDelete(deleteDialog.id)}
+              variant="contained"
+              sx={{
+                bgcolor: "#dc2626",
+                "&:hover": { bgcolor: "#b91c1c" },
+                borderRadius: 2,
+                px: 4,
+                py: 1.5,
+                fontWeight: "medium",
+                transition: "all 0.3s ease",
+              }}
+            >
+              Delete
             </Button>
           </DialogActions>
         </Dialog>
