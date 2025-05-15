@@ -362,7 +362,7 @@ const Staff = () => {
                     key={staff._id}
                     sx={{
                       bgcolor: index % 2 === 0 ? "white" : "#f9fafb",
-                      "&:hover": { bgcolor: "#e0e7ff", transition: "background 0.2s ease" },
+                      // "&:hover": { bgcolor: "#e0e7ff", transition: "background 0.2s ease" },
                     }}
                   >
                     <TableCell sx={{ py: 3 }}>
