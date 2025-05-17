@@ -16,6 +16,8 @@ import dashboardRouter from "./routes/dashboard.js";
 import supplyRoutes from './routes/supplyRoutes.js';
 import staffRoutes from "./routes/staffRoutes.js"; // ✅ Import staff routes
 import inventoryRoutes from "./routes/inventoryRoutes.js";
+import expenseRoutes from './routes/expenseRoutes.js';
+
 
 
 
@@ -49,6 +51,7 @@ app.use("/api/order", orderRouter);
 app.use('/api/supply', supplyRoutes);
 app.use("/api/staff", staffRoutes);
 app.use("/api/inventory", inventoryRoutes);
+app.use('/api/expenses', expenseRoutes);
 import "./utils/stockResetJob.js";
 // Start server
 app.listen(process.env.PORT, () => {
