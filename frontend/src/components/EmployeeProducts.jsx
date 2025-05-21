@@ -192,187 +192,222 @@ const POSPage = () => {
     }
   };
 
-  const handlePrintBill = () => {
-    const printWindow = window.open('', '_blank');
+  // Replace the handlePrintBill function with this improved version
+const handlePrintBill = () => {
+  const printWindow = window.open('', '_blank');
+  
+  // Calculate total items
+  const totalItems = orderData.products.reduce((sum, item) => sum + item.quantity, 0);
+  
+  // Create QR code data - typically includes invoice number, total amount, and company info
+  const qrData = `INV:${invoiceNum},AMT:${calculateGrandTotal()},COMP:${companyInfo.name}`;
 
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Invoice - ${companyInfo.name}</title>
-        <style>
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Invoice - ${companyInfo.name}</title>
+      <style>
+        @page {
+          size: 80mm 297mm; /* Standard thermal receipt size */
+          margin: 0;
+        }
+        body {
+          font-family: 'Arial', sans-serif;
+          margin: 0;
+          padding: 5mm;
+          color: #000;
+          font-size: 12px;
+          line-height: 1.4;
+          width: 70mm; /* Actual content width for thermal printers */
+        }
+        .invoice-container {
+          max-width: 70mm;
+        }
+        .company-header {
+          text-align: center;
+          margin-bottom: 5mm;
+        }
+        .company-header h1 {
+          font-size: 14px;
+          margin: 0;
+          font-weight: bold;
+        }
+        .company-header p {
+          margin: 2px 0;
+          font-size: 10px;
+        }
+        .invoice-details {
+          display: flex;
+          flex-direction: column;
+          margin-bottom: 5mm;
+          border-top: 1px dashed #999;
+          border-bottom: 1px dashed #999;
+          padding: 2mm 0;
+        }
+        .invoice-details p {
+          margin: 1mm 0;
+          font-size: 10px;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 10px;
+        }
+        th {
+          text-align: left;
+          font-weight: bold;
+          border-bottom: 1px solid #ddd;
+          padding: 1mm 0;
+        }
+        td {
+          padding: 1mm 0;
+        }
+        .text-right {
+          text-align: right;
+        }
+        .summary-table {
+          width: 100%;
+          margin-top: 3mm;
+        }
+        .summary-row {
+          display: flex;
+          justify-content: space-between;
+          padding: 1mm 0;
+          font-size: 10px;
+        }
+        .summary-row.total {
+          font-weight: bold;
+          border-top: 1px solid #ddd;
+          padding-top: 2mm;
+          margin-top: 1mm;
+        }
+        .footer {
+          text-align: center;
+          margin-top: 5mm;
+          font-size: 10px;
+          padding-top: 3mm;
+          border-top: 1px dashed #999;
+        }
+        .qr-container {
+          display: flex;
+          justify-content: center;
+          margin: 3mm 0;
+        }
+        /* Compact item listing */
+        .item-row td {
+          padding: 0.5mm 0;
+        }
+        .item-name {
+          width: 50%;
+        }
+        .order-summary {
+          margin-top: 5mm;
+          font-weight: bold;
+          text-align: center;
+          border-top: 1px dashed #999;
+          padding-top: 2mm;
+        }
+        @media print {
           body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 20px;
-            color: #2d3748;
-            line-height: 1.5;
-          }
-          .invoice-container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.05);
-          }
-          .company-header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #eee;
-          }
-          .company-header h1 {
-            color: #2d3748;
-            margin: 0;
-            font-size: 28px;
-            font-weight: 700;
-          }
-          .company-header p {
-            margin: 5px 0;
-            color: #718096;
-            font-size: 14px;
-          }
-          .invoice-details {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 30px;
-          }
-          .invoice-details div {
-            flex: 1;
-          }
-          .invoice-details p {
-            margin: 5px 0;
-            font-size: 14px;
-          }
-          table {
             width: 100%;
-            border-collapse: collapse;
-            margin: 25px 0;
-            font-size: 14px;
+            padding: 0;
           }
-          th {
-            text-align: left;
-            padding: 12px 8px;
-            background-color: #f8fafc;
-            color: #4a5568;
-            font-weight: 600;
-            border-bottom: 2px solid #e2e8f0;
-          }
-          td {
-            padding: 12px 8px;
-            border-bottom: 1px solid #edf2f7;
-          }
-          .text-right {
-            text-align: right;
-          }
-          .summary-table {
-            width: 300px;
-            margin-left: auto;
-            margin-top: 20px;
-          }
-          .summary-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-          }
-          .summary-row.total {
-            font-weight: 700;
-            border-top: 1px solid #e2e8f0;
-            padding-top: 12px;
-            margin-top: 5px;
-            font-size: 16px;
-          }
-          .footer {
-            text-align: center;
-            margin-top: 40px;
-            color: #718096;
-            font-size: 13px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-          }
-          @media print {
-            @page {
-              size: auto;
-              margin: 10mm;
-            }
-            body {
-              padding: 0;
-            }
-            .invoice-container {
-              box-shadow: none;
-              padding: 0;
-            }
-          }
-        </style>
-      </head>
-      <body>
-        <div class="invoice-container">
-          <div class="company-header">
-            <h1>${companyInfo.name}</h1>
-            <p>${companyInfo.address}</p>
-            <p>Phone: ${companyInfo.phone} | Email: ${companyInfo.email}</p>
+        }
+      </style>
+      <!-- QR code library -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    </head>
+    <body>
+      <div class="invoice-container">
+        <div class="company-header">
+          <h1>${companyInfo.name}</h1>
+          <p>${companyInfo.address}</p>
+          <p>Tel: ${companyInfo.phone}</p>
+        </div>
+        
+        <div class="invoice-details">
+          <p><strong>Invoice:</strong> ${invoiceNum}</p>
+          <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
+          <p><strong>Time:</strong> ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+          <p><strong>Cashier:</strong> ${userName || 'Admin'}</p>
+        </div>
+        
+        <table>
+          <thead>
+            <tr>
+              <th class="item-name">Item</th>
+              <th class="text-right">Qty</th>
+              <th class="text-right">Price</th>
+              <th class="text-right">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${orderData.products.map((item) => {
+              const product = products.find((p) => p._id === item.productId);
+              return `
+                <tr class="item-row">
+                  <td class="item-name">${product?.name}</td>
+                  <td class="text-right">${item.quantity}</td>
+                  <td class="text-right">₹${product?.price.toFixed(2)}</td>
+                  <td class="text-right">₹${(product?.price * item.quantity).toFixed(2)}</td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+        
+        <div class="summary-table">
+          <div class="summary-row">
+            <span>Subtotal:</span>
+            <span>₹${orderData.totalAmount.toFixed(2)}</span>
           </div>
-          
-          <div class="invoice-details">
-            <div>
-              <p><strong>Invoice #:</strong> ${invoiceNum}</p>
-              <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
-              <p><strong>Time:</strong> ${new Date().toLocaleTimeString()}</p>
-            </div>
-            <div class="text-right">
-              <p><strong>Cashier:</strong> ${userName || 'Admin'}</p>
-            </div>
+          <div class="summary-row">
+            <span>GST (${companyInfo.taxRate}%):</span>
+            <span>₹${calculateTax()}</span>
           </div>
-          
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Item</th>
-                <th class="text-right">Price</th>
-                <th class="text-right">Qty</th>
-                <th class="text-right">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${orderData.products.map((item, index) => {
-      const product = products.find((p) => p._id === item.productId);
-      return `
-                  <tr>
-                    <td>${index + 1}</td>
-                    <td>${product?.name}</td>
-                    <td class="text-right">₹${product?.price.toFixed(2)}</td>
-                    <td class="text-right">${item.quantity}</td>
-                    <td class="text-right">₹${(product?.price * item.quantity).toFixed(2)}</td>
-                  </tr>
-                `;
-    }).join('')}
-            </tbody>
-          </table>
-          
-          <div class="summary-table">
-            <div class="summary-row">
-              <span>Subtotal:</span>
-              <span>₹${orderData.totalAmount.toFixed(2)}</span>
-            </div>
-            <div class="summary-row">
-              <span>GST (${companyInfo.taxRate}%):</span>
-              <span>₹${calculateTax()}</span>
-            </div>
-            <div class="summary-row total">
-              <span>Grand Total:</span>
-              <span>₹${calculateGrandTotal()}</span>
-            </div>
+          <div class="summary-row total">
+            <span>Grand Total:</span>
+            <span>₹${calculateGrandTotal()}</span>
           </div>
-          
-          <div class="footer">
-            <p>Thank you for your business!</p>
-            <p>${companyInfo.name} - We appreciate your trust</p>
+          <div class="order-summary">
+            Total Items: ${totalItems}
           </div>
         </div>
-      </body>
-      </html>
-    `);
+        
+        <!-- QR Code will be inserted here -->
+        <div class="qr-container" id="qrcode"></div>
+        
+        <div class="footer">
+          <p>Thank you for your business!</p>
+          <p>${companyInfo.email}</p>
+        </div>
+      </div>
+      
+      <script>
+        // Generate QR code after page loads
+        window.onload = function() {
+          new QRCode(document.getElementById("qrcode"), {
+            text: "${qrData}",
+            width: 100,
+            height: 100,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+          });
+          
+          // Print automatically after QR code is generated
+          setTimeout(() => {
+            document.close();
+            window.print();
+            window.onafterprint = () => window.close();
+          }, 500);
+        };
+      </script>
+    </body>
+    </html>
+  `);
+
 
     setTimeout(() => {
       printWindow.document.close();

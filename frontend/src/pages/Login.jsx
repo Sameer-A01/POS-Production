@@ -46,8 +46,8 @@ const Login = () => {
     <div className="flex flex-col items-center justify-center min-h-screen bg-[url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center bg-fixed">
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
       <div className="relative z-10 flex flex-col items-center space-y-6">
-        <h2 className="text-4xl md:text-5xl text-white font-bold font-['Playfair_Display'] tracking-tight">
-          La Cuisine POS
+        <h2 className="text-4xl md:text-5xl text-amber-500 font-bold font-['Playfair_Display'] tracking-tight">
+          Royal King Dhaba
         </h2>
         <div className="w-80 sm:w-96 bg-[#fffaf0] bg-[url('https://www.transparenttextures.com/patterns/wood-pattern.png')] border-2 border-[#d4a373] rounded-lg shadow-xl p-8">
           <h3 className="text-2xl font-semibold text-[#4a3728] font-['Playfair_Display'] mb-6 text-center">
