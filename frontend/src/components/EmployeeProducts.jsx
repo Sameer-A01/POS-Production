@@ -16,7 +16,7 @@ const POSPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showBill, setShowBill] = useState(false);
   const [companyInfo, setCompanyInfo] = useState({
-    name: localStorage.getItem("company_name") || "My Store",
+    name: localStorage.getItem("company_name") || "ROYAL KING DHABA",
     address: localStorage.getItem("company_address") || "123 Business Street",
     phone: localStorage.getItem("company_phone") || "555-123-4567",
     email: localStorage.getItem("company_email") || "contact@mystore.com",
