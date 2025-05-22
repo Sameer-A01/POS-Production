@@ -31,7 +31,7 @@ const Sidebar = () => {
 
     // 📦 Stock & Orders
     { name: 'Orders', path: '/admin-dashboard/orders', icon: <FaShoppingCart /> },
-    { name: 'Pantry', path: '/admin-dashboard/Inventory', icon: <FaWarehouse /> },
+    { name: 'Inventory', path: '/admin-dashboard/Inventory', icon: <FaWarehouse /> },
     { name: 'Suppliers', path: '/admin-dashboard/InventorySupplier', icon: <FaTruckLoading /> },
 
     // 👥 Team & Users
@@ -49,7 +49,7 @@ const Sidebar = () => {
   const userMenuItems = [
     { name: 'POS', path: '/employee-dashboard', icon: <FaCashRegister />, isParent: true },  // exact match
     { name: 'My Orders', path: '/employee-dashboard/orders', icon: <FaShoppingCart />, isParent: false },
-    { name: 'Products', path: '/admin-dashboard/products', icon: <FaBoxOpen />, isParent: false },
+    { name: 'Menu', path: '/admin-dashboard/products', icon: <FaUtensils />, isParent: false },
     { name: 'Categories', path: '/admin-dashboard/categories', icon: <FaTable />, isParent: false },
     { name: 'Chef', path: '/admin-dashboard/supplier', icon: <FaUserTie />, isParent: false },
     { name: 'Logout', path: '/logout', icon: <FaSignOutAlt />, isParent: true },

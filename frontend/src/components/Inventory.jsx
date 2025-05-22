@@ -436,7 +436,7 @@ const Inventory = () => {
               </div>
               <div className="bg-white bg-opacity-20 rounded-lg p-4 backdrop-blur-sm">
                 <h3 className="text-white text-lg font-semibold mb-1">Total Value</h3>
-                <p className="text-3xl font-bold text-white">${stats.totalValue.toFixed(2)}</p>
+                <p className="text-3xl font-bold text-white">₹{stats.totalValue.toFixed(2)}</p>
               </div>
             </div>
           </div>
@@ -637,7 +637,7 @@ const Inventory = () => {
                   <label className="block text-gray-700 font-medium mb-2">Cost Per Unit</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                      <span className="text-gray-500">$</span>
+                      <span className="text-gray-500">₹</span>
                     </div>
                     <input
                       type="number"
@@ -884,7 +884,7 @@ const Inventory = () => {
                             )}
                             {item.costPerUnit > 0 && (
                               <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium border bg-gray-100 text-gray-800 border-gray-200">
-                                ${item.costPerUnit}/{item.unit}
+                                ₹{item.costPerUnit}/{item.unit}
                               </span>
                             )}
                           </div>

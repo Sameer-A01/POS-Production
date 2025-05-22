@@ -307,9 +307,9 @@ const Products = () => {
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Product Inventory</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Menu Management</h1>
             <p className="text-gray-600 mt-1 text-sm sm:text-base">
-              Manage your products and inventory
+            Manage your dishes and kitchen stock
             </p>
           </div>
           <button
@@ -352,7 +352,7 @@ const Products = () => {
               </div>
               <input
                 type="text"
-                placeholder="Search products by name..."
+                placeholder="Search items by name..."
                 onChange={handleSearchInput}
                 className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               />
@@ -380,7 +380,7 @@ const Products = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Product
+                    Items
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Image

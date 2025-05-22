@@ -163,7 +163,7 @@ const Summary = () => {
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 group">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm font-semibold text-gray-500 mb-2 uppercase tracking-wide">Products</p>
+              <p className="text-sm font-semibold text-gray-500 mb-2 uppercase tracking-wide">Total Menu</p>
               <h3 className="text-3xl font-bold text-gray-800 mb-1">{dashboardData.totalProducts}</h3>
               <p className="text-xs text-gray-500">Active items</p>
             </div>
@@ -424,7 +424,7 @@ const Summary = () => {
                 <FiAward size={32} />
               </div>
               <p className="text-gray-700 text-lg font-semibold">Perfect Stock Levels</p>
-              <p className="text-gray-500 text-sm mt-1">All products are adequately stocked</p>
+              <p className="text-gray-500 text-sm mt-1">All items are adequately stocked</p>
             </div>
           )}
         </div>
@@ -434,7 +434,7 @@ const Summary = () => {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-xl font-bold text-gray-800">Top Performer</h3>
-              <p className="text-sm text-gray-500">Best selling product</p>
+              <p className="text-sm text-gray-500">Best selling item</p>
             </div>
             <div className="p-3 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 text-blue-600">
               <FiTrendingUp size={20} />
@@ -533,7 +533,7 @@ const Summary = () => {
                 <FiAward size={32} />
               </div>
               <p className="text-gray-700 text-lg font-semibold">Healthy Stock Levels</p>
-              <p className="text-gray-500 text-sm mt-1">All products are well stocked</p>
+              <p className="text-gray-500 text-sm mt-1">All items are well stocked</p>
             </div>
           )}
         </div>

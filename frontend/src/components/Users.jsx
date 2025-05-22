@@ -309,7 +309,7 @@ const Users = () => {
                 >
                   <option value="">Select a role</option>
                   <option value="admin">Administrator</option>
-                  <option value="user">Standard User</option>
+                  <option value="user">Manager</option>
                 </select>
               </div>
               
