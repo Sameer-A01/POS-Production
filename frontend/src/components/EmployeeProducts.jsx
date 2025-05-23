@@ -17,7 +17,7 @@ const POSPage = () => {
   const [showBill, setShowBill] = useState(false);
   const [companyInfo, setCompanyInfo] = useState({
     name: localStorage.getItem("company_name") || "ROYAL KING DHABA",
-    address: localStorage.getItem("company_address") || "123 Business Street",
+    address: localStorage.getItem("company_address") || "Azamgarh,UP 276001",
     phone: localStorage.getItem("company_phone") || "555-123-4567",
     email: localStorage.getItem("company_email") || "contact@mystore.com",
     taxRate: localStorage.getItem("company_taxRate") || "18",

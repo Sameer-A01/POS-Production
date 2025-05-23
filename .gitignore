@@ -2,9 +2,19 @@
 /frontend/node_modules
 /server/node_modules
 
-
+# Ignore build/dist outputs
 /frontend/build
 /server/dist
+
+# Ignore environment variables
+/frontend/.env
+/server/.env
+
+# Ignore uploaded files (but keep the folder)
+/server/uploads/*
+
+# Prevent ignoring the uploads folder itself
+!/server/uploads/.gitkeep
 
 # Ignore log files
 *.log
