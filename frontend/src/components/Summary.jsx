@@ -123,39 +123,77 @@ const Summary = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6">
-      {/* Header */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-              Business Dashboard
-            </h1>
-            <p className="text-gray-600 mt-2 text-lg">Real-time insights and analytics</p>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="text-sm text-gray-600 bg-gray-50 px-6 py-3 rounded-xl shadow-sm border border-gray-200">
-              <div className="flex items-center gap-2">
-                <FiCalendar className="text-gray-500" />
-                <span className="font-medium">
-                  {new Date().toLocaleDateString('en-IN', { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'short', 
-                    day: 'numeric' 
-                  })}
-                </span>
+    {/* Header */}
+    <div className="bg-gradient-to-r from-amber-50 via-white to-amber-50 rounded-2xl shadow-lg border-2 border-amber-200/50 p-6 mb-8 relative overflow-hidden">
+      {/* Decorative Background Elements */}
+      <div className="absolute top-0 left-0 w-full h-full opacity-5">
+        <div className="absolute top-4 left-8 text-6xl">👑</div>
+        <div className="absolute top-6 right-12 text-4xl">🏰</div>
+        <div className="absolute bottom-4 left-1/4 text-3xl">✨</div>
+        <div className="absolute bottom-6 right-1/3 text-5xl">👑</div>
+      </div>
+      
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-10">
+        <div className="flex-1">
+          {/* Restaurant Name with Royal Styling */}
+          <div className="mb-3">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="text-3xl md:text-4xl animate-pulse">👑</div>
+              <h1 className="text-4xl md:text-6xl font-black bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-700 bg-clip-text text-transparent drop-shadow-sm">
+                Royal King
+              </h1>
+            </div>
+            <div className="flex items-center gap-2 ml-12 md:ml-16">
+              <h2 className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-red-600 via-orange-500 to-red-700 bg-clip-text text-transparent">
+                Dhaba
+              </h2>
+              <div className="flex gap-1">
+                <span className="text-amber-500 text-lg">⭐</span>
+                <span className="text-amber-500 text-lg">⭐</span>
+                <span className="text-amber-500 text-lg">⭐</span>
+                <span className="text-amber-500 text-lg">⭐</span>
+                <span className="text-amber-500 text-lg">⭐</span>
               </div>
             </div>
-            <button 
-              onClick={refreshDashboard}
-              className="p-3 bg-indigo-50 hover:bg-indigo-100 rounded-xl shadow-sm border border-indigo-200 hover:border-indigo-300 transition-all duration-200 group"
-              title="Refresh dashboard"
-            >
-              <FiRefreshCw className="text-indigo-600 group-hover:rotate-180 transition-transform duration-500" />
-            </button>
+          </div>
+          
+          {/* Tagline */}
+          <div className="ml-12 md:ml-16">
+            <p className="text-gray-700 text-lg md:text-xl font-medium italic">
+              "Where Royal Flavors Meet Authentic Taste"
+            </p>
+            <p className="text-gray-600 mt-1 text-base">Real-time business insights and analytics</p>
           </div>
         </div>
+        
+        <div className="flex items-center gap-4">
+          <div className="text-sm text-gray-700 bg-gradient-to-r from-amber-50 to-yellow-50 px-6 py-3 rounded-xl shadow-md border-2 border-amber-200">
+            <div className="flex items-center gap-2">
+              <FiCalendar className="text-amber-600" />
+              <span className="font-semibold">
+                {new Date().toLocaleDateString('en-IN', { 
+                  weekday: 'long', 
+                  year: 'numeric', 
+                  month: 'short', 
+                  day: 'numeric' 
+                })}
+              </span>
+            </div>
+          </div>
+          <button 
+            onClick={refreshDashboard}
+            className="p-3 bg-gradient-to-r from-amber-100 to-yellow-100 hover:from-amber-200 hover:to-yellow-200 rounded-xl shadow-md border-2 border-amber-300 hover:border-amber-400 transition-all duration-300 group transform hover:scale-105"
+            title="Refresh dashboard"
+          >
+            <FiRefreshCw className="text-amber-700 group-hover:rotate-180 transition-transform duration-500" />
+          </button>
+        </div>
       </div>
+      
+      {/* Royal Border Design */}
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-400"></div>
+      <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-400"></div>
+    </div>
 
       {/* Top Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
@@ -223,7 +261,7 @@ const Summary = () => {
               <h3 className={`text-2xl font-bold mb-1 ${profitLoss >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
                 {formatRupee(Math.abs(profitLoss))}
               </h3>
-              <p className="text-xs text-gray-500">Today's {profitLoss >= 0 ? 'profit' : 'loss'}</p>
+              <p className="text-xs text-gray-500">Updated {profitLoss >= 0 ? 'profit' : 'loss'}</p>
             </div>
             <div className={`p-4 rounded-xl ${profitLoss >= 0 ? 'bg-gradient-to-br from-emerald-50 to-emerald-100 text-emerald-600' : 'bg-gradient-to-br from-red-50 to-red-100 text-red-600'} group-hover:scale-110 transition-transform duration-300`}>
               {profitLoss >= 0 ? <FiTrendingUp size={24} /> : <FiTrendingDown size={24} />}

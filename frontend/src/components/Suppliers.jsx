@@ -24,7 +24,7 @@ const getImageUrl = (filename) => {
   // Remove any leading slash if present
   const cleanFilename = filename.startsWith('/') ? filename.slice(1) : filename;
   // Directly point to the uploads folder without /api prefix
-  return `http://localhost:5000/uploads/${cleanFilename}`;
+  return `${import.meta.env.VITE_API_URL}/uploads/${cleanFilename}`;
 };
 
 const Suppliers = () => {

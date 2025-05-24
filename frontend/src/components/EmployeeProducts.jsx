@@ -17,10 +17,10 @@ const POSPage = () => {
   const [showBill, setShowBill] = useState(false);
   const [companyInfo, setCompanyInfo] = useState({
     name: localStorage.getItem("company_name") || "ROYAL KING DHABA",
-    address: localStorage.getItem("company_address") || "Azamgarh,UP 276001",
-    phone: localStorage.getItem("company_phone") || "555-123-4567",
-    email: localStorage.getItem("company_email") || "contact@mystore.com",
-    taxRate: localStorage.getItem("company_taxRate") || "18",
+    address: localStorage.getItem("company_address") || "Purvanchal Highway Road,UP, Azamgarh 276001",
+    phone: localStorage.getItem("company_phone") || "+91-7398549531",
+    email: localStorage.getItem("company_email") || "royalkingdhaba9531@gmail.com",
+    taxRate: localStorage.getItem("company_taxRate") || "5",
   });
   const [showSettings, setShowSettings] = useState(false);
   const [showCart, setShowCart] = useState(false);
@@ -777,7 +777,7 @@ const handlePrintBill = () => {
                         <div className="bg-blue-100 p-3 rounded-lg flex items-center justify-center mb-3 h-24">
                           {product.image ? (
                             <img
-                              src={`http://localhost:5000/uploads/${product.image}`}
+                            src={`${import.meta.env.VITE_API_URL}/uploads/${product.image}`}
                               alt={product.name}
                               className="h-full object-contain"
                             />

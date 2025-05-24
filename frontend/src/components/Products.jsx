@@ -165,8 +165,8 @@ const Products = () => {
       image: null
     });
     setPreviewImage(
-      product.image 
-        ? `http://localhost:5000/uploads/${product.image}`
+      product.image
+        ? `${import.meta.env.VITE_API_URL}/uploads/${product.image}`
         : ""
     );
     setIsModalOpen(true);
@@ -249,7 +249,7 @@ const Products = () => {
       {product.image && (
         <div className="mt-2">
           <img 
-            src={`http://localhost:5000/uploads/${product.image}`}
+            src={`${import.meta.env.VITE_API_URL}/uploads/${product.image}`}
             alt={product.name} 
             className="h-20 w-20 object-cover rounded-md"
           />
@@ -421,7 +421,7 @@ const Products = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         {product.image && (
                           <img 
-                            src={`http://localhost:5000/uploads/${product.image}`}
+                          src={`${import.meta.env.VITE_API_URL}/uploads/${product.image}`}
                             alt={product.name} 
                             className="h-10 w-10 object-cover rounded-md"
                           />
