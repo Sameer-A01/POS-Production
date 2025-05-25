@@ -33,7 +33,10 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:5177",
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.static("public"));
 
